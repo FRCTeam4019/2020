@@ -33,6 +33,9 @@ public class Drive extends Command {
     double forward = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_FORWARD);
     double rotate = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_ROTATION);
     double throttle = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_THROTTLE) / -2 + 0.5;
+    System.out.println("forward: " + forward);
+    // System.out.println("rotate: " + rotate);
+
 
     // Sends appropiate power to drivetrain who in turn sets the speed of the motor.
     // System.out.println("Drive execute");

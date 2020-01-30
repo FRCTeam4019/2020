@@ -51,6 +51,9 @@ public class RobotMap {
 
   public static final double DRIVE_THROTTLE = 0.5;
 
+  public static final double AUTO_DRIVE_SPEED = 0.6;
+  public static final double AUTO_TURN_RATE = 0.003;
+
   /*
    * public static final int HAND_OPEN_BUTTON_ID = 5; public static final int
    * HAND_CLOSE_BUTTON_ID = 3;

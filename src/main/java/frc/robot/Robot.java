@@ -11,6 +11,7 @@ import java.nio.channels.Pipe;
 import java.util.function.Supplier;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSink;
@@ -22,11 +23,14 @@ import edu.wpi.first.vision.VisionThread;
 import edu.wpi.first.vision.VisionRunner.Listener;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
-import edu.wpi.first.wpilibj.vision.VisionPipeline;
+// import edu.wpi.first.wpilibj.vision.VisionThread;
+import edu.wpi.first.vision.VisionThread;
+
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.NewColorSensor;
 import frc.robot.subsystems.Shooter;
@@ -51,9 +55,17 @@ public class Robot extends TimedRobot {
   public static NewColorSensor m_colorsensor;
   public static Shooter m_shooter;
 
-  public SimpleWidget color_tab;
+  private double centerX = 0.0;
 
+
+  // public static Ultrasonic;
+  private VisionThread visionThread;
+  private final Object imgLock = new Object();
+
+  public SimpleWidget color_tab;
   public Supplier<String> color_supplier = () -> new String("");
+
+  private static final int[] IMG_SIZE = {320, 240};
 
   @Override
   public void robotInit() {
@@ -69,8 +81,8 @@ public class Robot extends TimedRobot {
     // Camera Code
     UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
     // UsbCamera camera = CameraServer.getInstance().;
-    camera.setResolution(1280, 720);
-    // Pipeline pipeline = new Pipeline();
+    camera.setResolution(IMG_SIZE[0], IMG_SIZE[1]);
+    /*// Pipeline pipeline = new Pipeline();
 
     // Listener listener = new Listener<Pipeline>() {
     //   @Override
@@ -97,17 +109,43 @@ public class Robot extends TimedRobot {
       Mat output = new Mat();
 
       while (!Thread.interrupted()) {
-        cvSink.grabFrame(source);
-        // pipeline.process(source);
-        Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-        outputStream.putFrame(output);
+        cvSink.grabFrame(source); 
+        pipeline.process(source);
+        //Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+        outputStream.putFrame(pipeline.hslThresholdOutput());
       }
-    }).start();
+    }).start();*/
+    CvSource output = CameraServer.getInstance().putVideo("Processed: ", IMG_SIZE[0], IMG_SIZE[1]);
+
+    visionThread = new VisionThread(CameraServer.getInstance().getVideo().getSource(), new Pipeline(), pipeline -> {
+      if (!pipeline.filterContoursOutput().isEmpty()) {
+          Rect r = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
+          synchronized (imgLock) {
+              centerX = r.x + (r.width / 2);
+          }
+          System.out.println(r.width + " " + r.height);
+      }
+      output.putFrame(pipeline.hslThresholdOutput());
+
+  });
+  visionThread.start();
   }
+
+@Override
+public void autonomousPeriodic() {
+    double centerX;
+    synchronized (imgLock) {
+        centerX = this.centerX;
+    }
+    double turn = centerX - (IMG_SIZE[0] / 2);
+    System.out.println("Turn: " + turn);
+    m_drivetrain.setPower(RobotMap.AUTO_DRIVE_SPEED + (turn * RobotMap.AUTO_TURN_RATE), -RobotMap.AUTO_DRIVE_SPEED + (RobotMap.AUTO_TURN_RATE * 0.003));
+    // m_drivetrain.setPower(-1, -1);
+    // m_drivetrain.setPower(0.5 * (forward - rotate), throttle * (forward + rotate));
+}
 
   @Override
   public void robotPeriodic() {
-    Scheduler.getInstance().run();
   }
 
   @Override
@@ -127,6 +165,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    Scheduler.getInstance().run();
     // vision.testPixy1();
 
     /*

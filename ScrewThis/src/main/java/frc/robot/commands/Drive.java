@@ -7,7 +7,20 @@
 
 package frc.robot.commands;
 
+import java.util.List;
+
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.controller.RamseteController;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
 //import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -16,6 +29,7 @@ public class Drive extends Command {
   /**
    * Creates a new Drive.
    */
+
 
   public Drive() {
     requires(Robot.m_drivetrain);
@@ -33,6 +47,9 @@ public class Drive extends Command {
     double forward = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_FORWARD);
     double rotate = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_ROTATION);
     double throttle = Robot.m_leftStick.getRawAxis(RobotMap.DRIVE_AXIS_THROTTLE) / -2 + 0.5;
+    // System.out.println("forward: " + forward);
+    // System.out.println("rotate: " + rotate);
+
 
     // Sends appropiate power to drivetrain who in turn sets the speed of the motor.
     // System.out.println("Drive execute");
@@ -55,4 +72,6 @@ public class Drive extends Command {
   @Override
   protected void interrupted() {
   }
+
+  
 }

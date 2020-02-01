@@ -48,35 +48,45 @@ public class ColorSense extends Command {
     if (rotationTime)
       rotationTime = !Robot.m_colorsensor.rotationControl();
 
-    // Checks to see if button was pressed tp activate color control
-    if (Robot.m_leftStick.getRawButton(RobotMap.COLOR_BUTTON_ID) && !rotationTime) {
+    // Checks to see if button was pressed to activate color control
+    if (Robot.m_leftStick.getRawButtonPressed(RobotMap.COLOR_BUTTON_BLUE_ID) && !rotationTime) {
+      colorTime = true;
+      desiredColor = "Blue";
+    } else if (Robot.m_leftStick.getRawButtonPressed(RobotMap.COLOR_BUTTON_GREEN_ID) && !rotationTime) {
       colorTime = true;
       desiredColor = "Green";
+    } else if (Robot.m_leftStick.getRawButtonPressed(RobotMap.COLOR_BUTTON_RED_ID) && !rotationTime) {
+      colorTime = true;
+      desiredColor = "Red";
+    } else if (Robot.m_leftStick.getRawButtonPressed(RobotMap.COLOR_BUTTON_YELLOW_ID) && !rotationTime) {
+      colorTime = true;
+      desiredColor = "Yellow";
     }
 
     // Runs color control until it returns true
     if (colorTime)
       colorTime = !Robot.m_colorsensor.colorControl(desiredColor);
-
-    if (Robot.m_leftStick.getRawButton(RobotMap.NEXT_COLOR_BUTTON_ID)) {
-      selectedColor++;
+    if (Robot.m_leftStick.getRawButtonPressed(RobotMap.NEXT_COLOR_BUTTON_ID)) {
+      selectedColor = (selectedColor + 1) % 4;
       System.out.print("Selection changed: " + selectedColor);
 
       if (selectedColor == 0) {
-        SmartDashboard.putString("Selected Color", "Blue");
+        desiredColor = "Blue";
       }
 
       if (selectedColor == 1) {
-        SmartDashboard.putString("Selected Color", "Green");
+        desiredColor = "Green";
       }
 
       if (selectedColor == 2) {
-        SmartDashboard.putString("Selected Color", "Red");
+        desiredColor = "Red";
       }
 
       if (selectedColor == 3) {
-        SmartDashboard.putString("Selected Color", "Yellow");
+        desiredColor = "Yellow";
       }
+
+      SmartDashboard.putString("Selected Color", desiredColor);
 
       // desiredColorNum = Robot.m_colorsensor.getActualColor(selectedColor);
     }

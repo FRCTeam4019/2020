@@ -7,97 +7,82 @@
 
 package frc.robot.subsystems;
 
+import frc.robot.Constants;
+import frc.robot.Robot;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.command.Subsystem;
-// import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
-import frc.robot.Robot;
-//import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotMap;
-import frc.robot.commands.Drive;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
-// Subsystem containing all methods relating to driving
-public class Drivetrain extends Subsystem {
+public class Drivetrain extends SubsystemBase {
   /**
    * Creates a new Drivetrain.
    */
 
-  // Talon motor controllers
   TalonSRX tLF;
   TalonSRX tLB;
   TalonSRX tRF;
   TalonSRX tRB;
 
-    // The robot's drive
-  // private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
+  double centerX;
 
   // The left-side drive encoder
-  private final Encoder m_leftEncoder =
-    new Encoder(RobotMap.kLeftEncoderPorts[0], RobotMap.kLeftEncoderPorts[1],
-      RobotMap.kLeftEncoderReversed);
+  private final Encoder m_leftEncoder = new Encoder(Constants.Autonomous.kLeftEncoderPorts[0],
+      Constants.Autonomous.kLeftEncoderPorts[1], Constants.Autonomous.kLeftEncoderReversed);
 
   // The right-side drive encoder
-  private final Encoder m_rightEncoder =
-    new Encoder(RobotMap.kRightEncoderPorts[0], RobotMap.kRightEncoderPorts[1],
-      RobotMap.kRightEncoderReversed);
+  private final Encoder m_rightEncoder = new Encoder(Constants.Autonomous.kRightEncoderPorts[0],
+      Constants.Autonomous.kRightEncoderPorts[1], Constants.Autonomous.kRightEncoderReversed);
 
-  // The gyro sensor                                                                                                                                                                                                                                                                                                                                         
+  // The gyro sensor
   private final Gyro m_gyro = new ADXRS450_Gyro();
 
   // Odometry class for tracking robot pose
   private final DifferentialDriveOdometry m_odometry;
 
-
-  //Constructor
   public Drivetrain() {
 
-    tLF = new TalonSRX(RobotMap.TALON_LEFT_FRONT_ID);
-    tLB = new TalonSRX(RobotMap.TALON_LEFT_BACK_ID);
-    tRF = new TalonSRX(RobotMap.TALON_RIGHT_FRONT_ID);
-    tRB = new TalonSRX(RobotMap.TALON_RIGHT_BACK_ID);
+    tLF = new TalonSRX(Constants.Talons.IDs.leftFront);
+    tLB = new TalonSRX(Constants.Talons.IDs.leftBack);
+    tRF = new TalonSRX(Constants.Talons.IDs.rightFront);
+    tRB = new TalonSRX(Constants.Talons.IDs.rightBack);
+
+    tLB.follow(tLF);
+    tRB.follow(tRF);
+
+    tLF.setInverted(Constants.Talons.Inversions.leftFront);
+    tLB.setInverted(Constants.Talons.Inversions.leftBack);
+    tRF.setInverted(Constants.Talons.Inversions.rightFront);
+    tRB.setInverted(Constants.Talons.Inversions.rightBack);
 
     // Sets the distance per pulse for the encoders
-    m_leftEncoder.setDistancePerPulse(RobotMap.kEncoderDistancePerPulse);
-    m_rightEncoder.setDistancePerPulse(RobotMap.kEncoderDistancePerPulse);
-
+    m_leftEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
+    m_rightEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
     resetEncoders();
+
     m_odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
+  }
+
+  public void setPower(double leftPower, double rightPower) {
+    tLF.set(ControlMode.PercentOutput, leftPower);
+
+    tRF.set(ControlMode.PercentOutput, rightPower);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // Update the odometry in the periodic block
-    m_odometry.update(Rotation2d.fromDegrees(getHeading()), m_leftEncoder.getDistance(),
-    m_rightEncoder.getDistance());
   }
 
-  // Sets the speed of the motors
-  public void setPower(double leftPower, double rightPower) {
-    tLF.set(ControlMode.PercentOutput, RobotMap.DRIVE_THROTTLE * leftPower);
-    tLB.set(ControlMode.PercentOutput, RobotMap.DRIVE_THROTTLE * leftPower);
-
-    tRF.set(ControlMode.PercentOutput, RobotMap.DRIVE_THROTTLE * rightPower);
-    tRB.set(ControlMode.PercentOutput, RobotMap.DRIVE_THROTTLE * rightPower);
-  }
-
-  @Override
-  protected void initDefaultCommand() {
-    // TODO Auto-generated method stub
-    setDefaultCommand(new Drive());
-  }
-
-    /**              
+  /**
    * Returns the currently-estimated pose of the robot.
    *
    * @return The pose.
@@ -132,8 +117,8 @@ public class Drivetrain extends Subsystem {
    * @param rot the commanded rotation
    */
   public void arcadeDrive(double fwd, double rot) {
-    setPower(RobotMap.AUTO_DRIVE_SPEED + (rot * RobotMap.AUTO_TURN_RATE),
-    -RobotMap.AUTO_DRIVE_SPEED + (rot * RobotMap.AUTO_TURN_RATE));
+    setPower(Constants.Autonomous.autoDriveSpeed + (rot * Constants.Autonomous.autoTurnRate),
+        -Constants.Autonomous.autoDriveSpeed + (rot * Constants.Autonomous.autoTurnRate));
   }
 
   /**
@@ -185,7 +170,8 @@ public class Drivetrain extends Subsystem {
   }
 
   /**
-   * Sets the max output of the drive.  Useful for scaling the drive to drive more slowly.
+   * Sets the max output of the drive. Useful for scaling the drive to drive more
+   * slowly.
    *
    * @param maxOutput the maximum output to which the drive will be constrained
    */
@@ -206,7 +192,7 @@ public class Drivetrain extends Subsystem {
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    return Math.IEEEremainder(m_gyro.getAngle(), 360) * (RobotMap.kGyroReversed ? -1.0 : 1.0);
+    return Math.IEEEremainder(m_gyro.getAngle(), 360) * (Constants.Autonomous.kGyroReversed ? -1.0 : 1.0);
   }
 
   /**
@@ -215,6 +201,6 @@ public class Drivetrain extends Subsystem {
    * @return The turn rate of the robot, in degrees per second
    */
   public double getTurnRate() {
-    return m_gyro.getRate() * (RobotMap.kGyroReversed ? -1.0 : 1.0);
+    return m_gyro.getRate() * (Constants.Autonomous.kGyroReversed ? -1.0 : 1.0);
   }
 }

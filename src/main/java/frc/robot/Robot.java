@@ -14,10 +14,18 @@ import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.vision.VisionThread;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.Drive;
+import frc.robot.commands.Vision;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.VisionTracking;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,9 +39,17 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  private Drivetrain m_drivetrain;
+  private VisionTracking m_visiontracking;
+
+  private Drive m_drive;
+
   private VisionThread visionThread;
   public static Object imgLock = new Object();
   private double centerX = 0.0;
+
+  Ultrasonic ultrasonic = new Ultrasonic(5,6);
+  AnalogPotentiometer pot = new AnalogPotentiometer(new AnalogInput(0), 1, 0);
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -44,35 +60,27 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
-
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
     cam.setResolution(Constants.Vision.camSize[0], Constants.Vision.camSize[1]);
     //cam.setExposureManual(1);
     cam.setExposureAuto();
     cam.setWhiteBalanceAuto();
+    
+    m_robotContainer = new RobotContainer();
+    m_drivetrain =  m_robotContainer.m_drivetrain;
+    m_visiontracking = m_robotContainer.m_visiontracking;
+
+    m_drive = m_robotContainer.m_drive;
     //cam.setBrightness(1);
+
+    //Starts periodic updates for visionTracking
+    CommandScheduler.getInstance().registerSubsystem(m_visiontracking);
+
+    ultrasonic.setAutomaticMode(true);
   }
 
-  /**
-   * This function is called every robot packet, no matter the mode. Use this for
-   * items like diagnostics that you want ran during disabled, autonomous,
-   * teleoperated and test.
-   *
-   * <p>
-   * This runs after the mode specific periodic functions, but before LiveWindow
-   * and SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {
-    // Runs the Scheduler. This is responsible for polling buttons, adding
-    // newly-scheduled
-    // commands, running already-scheduled commands, removing finished or
-    // interrupted commands,
-    // and running subsystem periodic() methods. This must be called from the
-    // robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    // CommandScheduler.getInstance().run();
+  
+   /* teleoperated and test.
   }
 
   /**
@@ -92,34 +100,23 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    // if (m_autonomousCommand != null) {
-    //   m_autonomousCommand.schedule();
-    // }
-
-    m_robotContainer.m_vision.register();
+    //Cancels the normal Teleop drive command
+    m_drive.cancel();
   }
 
   /**
-   * This function is called periodically during autonomous.
+
+    * This function is called periodically during autonomous.
    */
   @Override
   public void autonomousPeriodic() {
     SmartDashboard.updateValues();
-    CommandScheduler.getInstance().run();
   }
-
+  
   @Override
   public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
+    //Start the Teleop drive command
+    m_drive.schedule();
   }
 
   /**
@@ -127,7 +124,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    CommandScheduler.getInstance().run();
+    ultrasonic.ping();
+    SmartDashboard.putNumber("Ultrasonic", pot.get());
+    SmartDashboard.updateValues();
   }
 
   @Override
@@ -141,5 +140,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+  }
+
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
   }
 }

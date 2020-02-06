@@ -57,8 +57,8 @@ public final class Constants {
         public static final double kEncoderDistancePerPulse = 0;
         public static final boolean kGyroReversed = false;
 
-        public static final double autoDriveSpeed = 0.6;
-        public static final double autoTurnRate = 0.003;
+        public static final double autoDriveSpeed = 0.0;
+        public static final double autoTurnRate = 0.002;
 
         public static final String trajectoryJSON = "paths/YourPath.wpilib.json";
     }
@@ -76,6 +76,7 @@ public final class Constants {
             public static final int bottomIntake = 8;
             public static final int shooter = 9;
         }
+        
         public static abstract class Inversions{
             public static final boolean leftFront = true;
             public static final boolean leftBack = true;
@@ -91,7 +92,9 @@ public final class Constants {
             public static final int rotate = 7;
             public static final int color = 8;
             public static final int nextColor = 12;
+            public static final int autoAlign = 2;
         }
+
         public static final double driveThrottle = 0.5;
 
         public static final int driveAxisForward = 1;

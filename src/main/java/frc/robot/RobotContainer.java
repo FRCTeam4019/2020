@@ -31,10 +31,12 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import frc.robot.commands.Drive;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.Vision;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.VisionTracking;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 
 /**
@@ -46,12 +48,11 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private static final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-
-  private static final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
 
   public static final Drivetrain m_drivetrain = new Drivetrain();
-  public static final VisionTracking m_vision = new VisionTracking();
+  public static final VisionTracking m_visiontracking = new VisionTracking();
+
+  public static Drive m_drive;
 
   public final Joystick m_drivestick = new Joystick(0);
 
@@ -61,12 +62,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
-    m_drivetrain
-        .setDefaultCommand(new Drive(m_drivetrain,
-            () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
-            () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
-            () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle)));
-    m_vision.register();
+
   }
 
   /**
@@ -76,7 +72,12 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-
+    m_drive = new Drive(m_drivetrain, m_visiontracking,
+      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
+      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
+      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
+      //This is the trigger for auto align
+      () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
   }
 
   /**
@@ -129,8 +130,8 @@ public class RobotContainer {
         new PIDController(Constants.Autonomous.kPDriveVel, 0, 0),
         // RamseteCommand passes volts to the callback
         m_drivetrain::tankDriveVolts, m_drivetrain);
-
+    
     // Run path following command, then stop at the end.
-    return ramseteCommand.andThen(() -> m_drivetrain.tankDriveVolts(0, 0));
+    return m_visiontracking.getDefaultCommand();
   }
 }

@@ -117,8 +117,8 @@ public class Drivetrain extends SubsystemBase {
    * @param rot the commanded rotation
    */
   public void arcadeDrive(double fwd, double rot) {
-    setPower(Constants.Autonomous.autoDriveSpeed + (rot * Constants.Autonomous.autoTurnRate),
-        -Constants.Autonomous.autoDriveSpeed + (rot * Constants.Autonomous.autoTurnRate));
+    setPower(Constants.Autonomous.autoDriveSpeed + (rot),
+        -Constants.Autonomous.autoDriveSpeed + (rot));
   }
 
   /**

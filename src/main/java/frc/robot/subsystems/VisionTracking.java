@@ -20,10 +20,12 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class VisionTracking extends SubsystemBase {
+  //This subsystem is used for vision tracking
 
   private VisionThread visionThread;
   public static Object imgLock = new Object();
   private double centerX = 0.0;
+  double turn = 0;
 
   /**
    * Creates a new VisionTracking.
@@ -31,36 +33,36 @@ public class VisionTracking extends SubsystemBase {
   public VisionTracking() {
 
     CvSource output = CameraServer.getInstance().putVideo("Processed: ", Constants.Vision.camSize[0],
-        Constants.Vision.camSize[1]);
+      Constants.Vision.camSize[1]);
 
+    
+    //Creates the new visionthread which updates the camera and contours
     visionThread = new VisionThread(CameraServer.getInstance().getVideo().getSource(), new Pipeline(), pipeline -> {
+      
       if (!pipeline.filterContoursOutput().isEmpty()) {
         Rect r = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
         synchronized (imgLock) {
           centerX = r.x + (r.width / 2);
         }
-        System.out.println(r.width + " " + r.height);
       }
       output.putFrame(pipeline.hsvThresholdOutput());
-
     });
-    visionThread.start();
 
+    visionThread.start();
   }
 
-  private void autoAlign() {
-    double centerX;
-    synchronized (imgLock) {
-      centerX = this.centerX;
-    }
-    double turn = centerX - (Constants.Vision.camSize[0] / 2);
-    RobotContainer.m_drivetrain.setPower(Constants.Autonomous.autoDriveSpeed + (turn * Constants.Autonomous.autoTurnRate),
-        -Constants.Autonomous.autoDriveSpeed + (turn * Constants.Autonomous.autoTurnRate));
-    System.out.println(turn);
+  public double getTurn() {
+    return turn;
   }
 
   @Override
   public void periodic() {
-    autoAlign();
+    double centerX;
+
+    synchronized (imgLock) {
+      centerX = this.centerX;
+    }
+    
+    turn = centerX - (Constants.Vision.camSize[0] / 2);
   }
 }

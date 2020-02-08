@@ -29,11 +29,15 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.Vision;
+import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Spinner;
+import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -51,8 +55,12 @@ public class RobotContainer {
 
   public static final Drivetrain m_drivetrain = new Drivetrain();
   public static final VisionTracking m_visiontracking = new VisionTracking();
+  public static final ColorSensor m_colorSensor = new ColorSensor();
+  public static final Ultrasonics m_ultrasonics = new Ultrasonics();
+  public static final Spinner m_spinner = new Spinner();
 
   public static Drive m_drive;
+  public static ColorSense m_colorSense;
 
   public final Joystick m_drivestick = new Joystick(0);
 
@@ -72,12 +80,18 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    m_drive = new Drive(m_drivetrain, m_visiontracking,
-      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
-      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
-      () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
-      //This is the trigger for auto align
-      () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
+    m_drive = new Drive(m_drivetrain, m_visiontracking, m_ultrasonics,
+        () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
+        () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
+        () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
+        // This is the trigger for auto align
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
+
+    m_colorSense = new ColorSense(m_colorSensor, m_spinner,
+            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
+            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
+            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
+
   }
 
   /**
@@ -88,12 +102,13 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     Trajectory trajectory = null;
 
-    //Get the pathweaver JSON file from the file system and convert it to a path
+    // Get the pathweaver JSON file from the file system and convert it to a path
     try {
       Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(Constants.Autonomous.trajectoryJSON);
       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.trajectoryJSON, ex.getStackTrace());
+      DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.trajectoryJSON,
+          ex.getStackTrace());
     }
 
     // Create a voltage constraint to ensure we don't accelerate too fast
@@ -112,14 +127,14 @@ public class RobotContainer {
 
     // // An example trajectory to follow. All units in meters.
     // Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-    //     // Start at the origin facing the +X direction
-    //     new Pose2d(0, 0, new Rotation2d(0)),
-    //     // Pass through these two interior waypoints, making an 's' curve path
-    //     List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-    //     // End 3 meters straight ahead of where we started, facing forward
-    //     new Pose2d(3, 0, new Rotation2d(0)),
-    //     // Pass config
-    //     config);
+    // // Start at the origin facing the +X direction
+    // new Pose2d(0, 0, new Rotation2d(0)),
+    // // Pass through these two interior waypoints, making an 's' curve path
+    // List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+    // // End 3 meters straight ahead of where we started, facing forward
+    // new Pose2d(3, 0, new Rotation2d(0)),
+    // // Pass config
+    // config);
 
     RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
         new RamseteController(Constants.Autonomous.kRamseteB, Constants.Autonomous.kRamseteZeta),
@@ -130,7 +145,7 @@ public class RobotContainer {
         new PIDController(Constants.Autonomous.kPDriveVel, 0, 0),
         // RamseteCommand passes volts to the callback
         m_drivetrain::tankDriveVolts, m_drivetrain);
-    
+
     // Run path following command, then stop at the end.
     return m_visiontracking.getDefaultCommand();
   }

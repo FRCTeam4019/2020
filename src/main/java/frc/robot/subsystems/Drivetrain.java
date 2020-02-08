@@ -14,11 +14,14 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Sendable;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
@@ -66,6 +69,9 @@ public class Drivetrain extends SubsystemBase {
     // Sets the distance per pulse for the encoders
     m_leftEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
     m_rightEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
+
+    m_leftEncoder.setMinRate(5);
+    m_rightEncoder.setMinRate(5);
     resetEncoders();
 
     m_odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
@@ -73,13 +79,16 @@ public class Drivetrain extends SubsystemBase {
 
   public void setPower(double leftPower, double rightPower) {
     tLF.set(ControlMode.PercentOutput, leftPower);
-
     tRF.set(ControlMode.PercentOutput, rightPower);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    // SmartDashboard.putNumber("Encoder Rotations", m_rightEncoder.get());
+    SmartDashboard.putData("Left Encoder", m_leftEncoder);
+    SmartDashboard.putData("Right Encoder", m_rightEncoder);
+    SmartDashboard.putData("Gyro", (Sendable) m_gyro);
   }
 
   /**

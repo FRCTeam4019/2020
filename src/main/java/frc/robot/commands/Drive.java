@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 
 import java.util.function.BooleanSupplier;
@@ -23,16 +24,20 @@ public class Drive extends CommandBase {
    */
   private final Drivetrain m_drivetrain;
   private final VisionTracking m_visionTracking;
+  private final Ultrasonics m_ultrasonics;
+
   private final DoubleSupplier forward;
   private final DoubleSupplier rotate;
   private final DoubleSupplier throttle;
   private final BooleanSupplier alignTrigger;
 
   // Constructor
-  public Drive(Drivetrain drivetrain, VisionTracking visionTracking, DoubleSupplier forward, DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger) {
+  public Drive(Drivetrain drivetrain, VisionTracking visionTracking, Ultrasonics ultrasonics, DoubleSupplier forward,
+      DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger) {
 
     this.m_drivetrain = drivetrain;
     this.m_visionTracking = visionTracking;
+    this.m_ultrasonics = ultrasonics;
 
     this.forward = forward;
     this.rotate = rotate;
@@ -60,8 +65,9 @@ public class Drive extends CommandBase {
     double dThrottle = throttle.getAsDouble() / -2 + 0.5;
 
     // Sends values to drive method.
-    //If the auto align button is not pressed, do normal drive, otherwise, do auto align
-    if(!alignTrigger.getAsBoolean()) {
+    // If the auto align button is not pressed, do normal drive, otherwise, do auto
+    // align
+    if (!alignTrigger.getAsBoolean()) {
       m_drivetrain.setPower(dThrottle * (dForward - dRotate), dThrottle * (dForward + dRotate));
     } else {
       autoAlign();
@@ -69,21 +75,30 @@ public class Drive extends CommandBase {
 
   }
 
-  public void autoAlign() {
-    double turn = m_visionTracking.getTurn();
-    m_drivetrain.setPower(Constants.Autonomous.autoDriveSpeed - (turn * Constants.Autonomous.autoTurnRate),
-      -Constants.Autonomous.autoDriveSpeed + (turn * Constants.Autonomous.autoTurnRate));
-    System.out.println(turn);
-    
-    if(Math.abs(turn) <= 20) {
-      SmartDashboard.putBoolean("Aligned", true);
-    } else {
+  /**
+   * Align the robot with the center of the target and move to the proper range
+   */
+  private void autoAlign() {
+    double rawTurn = m_visionTracking.getTurn();
+
+    if(Math.abs(rawTurn) > Constants.Vision.alignmentOffset) {
+      double turn = rawTurn * Constants.Autonomous.autoTurnRate;
+      // double turn2 = (Constants.Vision.camSize[0]/10.0 - (rawTurn)/10.0) * Constants.Autonomous.autoTurnRate * Math.copySign(1, rawTurn);
+      double turn2 = 0;
+
+      System.out.println(turn2 + turn);
+      m_drivetrain.setPower(Constants.Autonomous.autoDriveSpeed - (turn + turn2),
+          -Constants.Autonomous.autoDriveSpeed + (turn + turn2));
       SmartDashboard.putBoolean("Aligned", false);
+    } else {
+      SmartDashboard.putBoolean("Aligned", true);
     }
     // m_drivetrain.arcadeDrive(0, turn);
-    // System.out.println(String.format("Left: %s Right: %s", 
-    //   Constants.Autonomous.autoDriveSpeed + (turn * Constants.Autonomous.autoTurnRate),
-    //   -Constants.Autonomous.autoDriveSpeed + (turn * Constants.Autonomous.autoTurnRate)));
+    // System.out.println(String.format("Left: %s Right: %s",
+    // Constants.Autonomous.autoDriveSpeed + (turn *
+    // Constants.Autonomous.autoTurnRate),
+    // -Constants.Autonomous.autoDriveSpeed + (turn *
+    // Constants.Autonomous.autoTurnRate)));
   }
 
   // Called once the command ends or is interrupted.

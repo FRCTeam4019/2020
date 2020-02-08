@@ -54,7 +54,7 @@ public final class Constants {
         public static final boolean kRightEncoderReversed = false;
         public static final boolean kLeftEncoderReversed = false;
 
-        public static final double kEncoderDistancePerPulse = 0;
+        public static final double kEncoderDistancePerPulse = 100;
         public static final boolean kGyroReversed = false;
 
         public static final double autoDriveSpeed = 0.0;
@@ -112,6 +112,24 @@ public final class Constants {
 
     public static abstract class Vision {
         public static final int[] camSize = { 320, 240 };
+        public static final int alignmentOffset = 30;
+    }
+
+    public static abstract class Ultrasonics {
+        public static final int ultrasonic1Port = 0;
+        public static final int ultrasonic2Port = 1;
+
+        // public static final double distanceMultiplier = 5.0/(5.0/1024.0)*6;
+        public static final double distanceMultiplier = 500;
+        public static final double distanceOffset = 0;
+
+        public static final double maxRange = 500;
+        public static final double minRange = 30;
+
+
+        //5 cm: 0.058
+        //30 cm: 0.06
+        // 30 min distance
     }
 
     public static final int spinnerSpeed = 100;

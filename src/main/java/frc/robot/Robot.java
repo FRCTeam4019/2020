@@ -21,9 +21,13 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
 import frc.robot.commands.Vision;
+import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Spinner;
+import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 
 
@@ -41,15 +45,12 @@ public class Robot extends TimedRobot {
 
   private Drivetrain m_drivetrain;
   private VisionTracking m_visiontracking;
+  private ColorSensor m_colorSensor;
+  private Ultrasonics m_ultrasonics;
+  private Spinner m_spinner;
 
   private Drive m_drive;
-
-  private VisionThread visionThread;
-  public static Object imgLock = new Object();
-  private double centerX = 0.0;
-
-  Ultrasonic ultrasonic = new Ultrasonic(5,6);
-  AnalogPotentiometer pot = new AnalogPotentiometer(new AnalogInput(0), 1, 0);
+  private ColorSense m_colorSense;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -69,14 +70,21 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     m_drivetrain =  m_robotContainer.m_drivetrain;
     m_visiontracking = m_robotContainer.m_visiontracking;
+    m_colorSensor = m_robotContainer.m_colorSensor;
+    m_ultrasonics = m_robotContainer.m_ultrasonics;
+    m_spinner = m_robotContainer.m_spinner;
 
     m_drive = m_robotContainer.m_drive;
+    m_colorSense = m_robotContainer.m_colorSense;
+
+    
     //cam.setBrightness(1);
 
     //Starts periodic updates for visionTracking
     CommandScheduler.getInstance().registerSubsystem(m_visiontracking);
-
-    ultrasonic.setAutomaticMode(true);
+    CommandScheduler.getInstance().registerSubsystem(m_drivetrain);
+    CommandScheduler.getInstance().registerSubsystem(m_colorSensor);
+    CommandScheduler.getInstance().registerSubsystem(m_ultrasonics);
   }
 
   
@@ -102,6 +110,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     //Cancels the normal Teleop drive command
     m_drive.cancel();
+    m_colorSense.cancel();
   }
 
   /**
@@ -117,6 +126,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     //Start the Teleop drive command
     m_drive.schedule();
+    m_colorSense.schedule();
   }
 
   /**
@@ -124,9 +134,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    ultrasonic.ping();
-    SmartDashboard.putNumber("Ultrasonic", pot.get());
-    SmartDashboard.updateValues();
   }
 
   @Override

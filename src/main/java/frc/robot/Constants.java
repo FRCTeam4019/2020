@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers.FloatArraySerializer;
 import com.revrobotics.ColorMatch;
 
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
@@ -57,10 +58,11 @@ public final class Constants {
         public static final double kEncoderDistancePerPulse = 100;
         public static final boolean kGyroReversed = false;
 
-        public static final double autoDriveSpeed = 0.0;
+        public static final double autoDriveSpeed = 0.5;
+        public static final double autoTurnRateAddition = 0.2;
         public static final double autoTurnRate = 0.002;
 
-        public static final String trajectoryJSON = "paths/YourPath.wpilib.json";
+        public static final String trajectoryJSON = "paths/Unnamed.wpilib.json";
     }
 
     public static abstract class Talons {
@@ -75,6 +77,8 @@ public final class Constants {
             public static final int topIntake = 7;
             public static final int bottomIntake = 8;
             public static final int shooter = 9;
+            public static final int rightElevator = 10;
+            public static final int leftElevator = 11;
         }
         
         public static abstract class Inversions{
@@ -82,6 +86,12 @@ public final class Constants {
             public static final boolean leftBack = true;
             public static final boolean rightFront = false;
             public static final boolean rightBack = false;
+        }
+    }
+
+    public static abstract class Servos {
+        public static abstract class Channels {
+            public static final int shooterHatch = 4;
         }
     }
 
@@ -93,6 +103,8 @@ public final class Constants {
             public static final int color = 8;
             public static final int nextColor = 12;
             public static final int autoAlign = 2;
+            public static final int elevatorUp = 6;
+            public static final int elevatorDown = 4;
         }
 
         public static final double driveThrottle = 0.5;
@@ -113,6 +125,8 @@ public final class Constants {
     public static abstract class Vision {
         public static final int[] camSize = { 320, 240 };
         public static final int alignmentOffset = 30;
+
+        public static final double distanceOffset = 40;
     }
 
     public static abstract class Ultrasonics {
@@ -121,7 +135,7 @@ public final class Constants {
 
         // public static final double distanceMultiplier = 5.0/(5.0/1024.0)*6;
         public static final double distanceMultiplier = 500;
-        public static final double distanceOffset = 0;
+        public static final double distanceOffset = 20;
 
         public static final double maxRange = 500;
         public static final double minRange = 30;
@@ -132,6 +146,33 @@ public final class Constants {
         // 30 min distance
     }
 
-    public static final int spinnerSpeed = 100;
+    public static abstract class Shooter {
+        /**The range from which the fire in CENTIMETRES
+         */
+        public static final double firingRange = 200;
+        public static final double shooterPower = 0.9;
+        public static final double conveyorOuttakePower = 0.9;
+        public static final double conveyorIntakePower = 0.9;
+        public static final double intakeIntakePower = 0.9;
+        public static final double intakeOuttakePower = 0.9;
+
+        public static final double hatchClosedAngle = 0;
+        public static final double hatchOpenAngle = 45;
+
+        /** 
+         * The amount of updates to delay to allow the fly wheels to speed up before firing
+        */
+        public static final int fireDelay = 10;
+    }
+
+    public static abstract class Evelator {
+        public static final double upSpeed = 0.7;
+        public static final double downSpeed = 0.7;
+    }
+
+    public static final double spinnerSpeed = 0.4;
+
+
+
 
 }

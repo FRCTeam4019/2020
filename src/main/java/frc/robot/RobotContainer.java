@@ -29,19 +29,25 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import frc.robot.commands.Autonomous;
 import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
+import frc.robot.commands.Elevate;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.Shoot;
 import frc.robot.commands.Vision;
 import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Spinner;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -58,9 +64,15 @@ public class RobotContainer {
   public static final ColorSensor m_colorSensor = new ColorSensor();
   public static final Ultrasonics m_ultrasonics = new Ultrasonics();
   public static final Spinner m_spinner = new Spinner();
+  public static final Shooter m_shooter = new Shooter();
+  public static final Elevator m_elevator = new Elevator();
 
   public static Drive m_drive;
   public static ColorSense m_colorSense;
+  public static Autonomous m_autoCommand;
+  public static Shoot m_shoot;
+  public static Elevate m_elevate;
+  public static Command m_autoCommandGroup;
 
   public final Joystick m_drivestick = new Joystick(0);
 
@@ -70,6 +82,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
+    m_autoCommand = new Autonomous(m_drivetrain, m_shooter, m_visiontracking, m_ultrasonics);
+    m_autoCommandGroup = getAutonomousCommand();
 
   }
 
@@ -88,10 +102,17 @@ public class RobotContainer {
         () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
 
     m_colorSense = new ColorSense(m_colorSensor, m_spinner,
-            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
-            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
-            () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
+        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
+        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
+        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
+    
+    m_shoot = new Shoot(m_shooter,
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.intake));
 
+    m_elevate = new Elevate(m_elevator, 
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp), 
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorDown));
   }
 
   /**
@@ -125,7 +146,7 @@ public class RobotContainer {
             // Apply the voltage constraint
             .addConstraint(autoVoltageConstraint);
 
-    // // An example trajectory to follow. All units in meters.
+    // An example trajectory to follow. All units in meters.
     // Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
     // // Start at the origin facing the +X direction
     // new Pose2d(0, 0, new Rotation2d(0)),
@@ -147,6 +168,9 @@ public class RobotContainer {
         m_drivetrain::tankDriveVolts, m_drivetrain);
 
     // Run path following command, then stop at the end.
-    return m_visiontracking.getDefaultCommand();
+    // return ramseteCommand;
+
+    return new SequentialCommandGroup(ramseteCommand, m_autoCommand);
+
   }
 }

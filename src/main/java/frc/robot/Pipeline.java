@@ -47,9 +47,11 @@ public class Pipeline implements VisionPipeline {
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {0.0, 180.0};
-		double[] hsvThresholdSaturation = {0.0, 15.0};
-		double[] hsvThresholdValue = {100.0, 140.0};
+		double[] hsvThresholdHue = {0.0, 360.0};
+		//Max value is 180
+		double[] hsvThresholdSaturation = {0.0, 130.0};
+		//Max value is 256
+		double[] hsvThresholdValue = {200.0, 230.0};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step Find_Contours0:

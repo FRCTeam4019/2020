@@ -7,48 +7,35 @@
 
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 
-/**
- * Command class in charge of calling methods related to driving.
- */
-public class Drive extends CommandBase {
-  /**
-   * Creates a new Drive.
-   */
+public class Autonomous extends CommandBase {
+
   private final Drivetrain m_drivetrain;
   private final VisionTracking m_visionTracking;
   private final Ultrasonics m_ultrasonics;
+  private final Shooter m_shooter;
 
-  private final DoubleSupplier forward;
-  private final DoubleSupplier rotate;
-  private final DoubleSupplier throttle;
-  private final BooleanSupplier alignTrigger;
+  private boolean isFinished = false;
 
-  // Constructor
-  public Drive(Drivetrain drivetrain, VisionTracking visionTracking, Ultrasonics ultrasonics, DoubleSupplier forward,
-      DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger) {
+  /**
+   * Creates a new Autonomous.
+   */
+  public Autonomous(Drivetrain drivetrain, Shooter shooter, VisionTracking visionTracking, Ultrasonics ultrasonics) {
+    // Use addRequirements() here to declare subsystem dependencies.
 
     this.m_drivetrain = drivetrain;
     this.m_visionTracking = visionTracking;
     this.m_ultrasonics = ultrasonics;
+    this.m_shooter = shooter;
 
-    this.forward = forward;
-    this.rotate = rotate;
-    this.throttle = throttle;
-    this.alignTrigger = alignTrigger;
-
-    // Use addRequirements() here to declare subsystem dependencies.
-
-    addRequirements(drivetrain, visionTracking);
+    addRequirements(drivetrain, visionTracking, ultrasonics, m_shooter);
   }
 
   // Called when the command is initially scheduled.
@@ -59,26 +46,9 @@ public class Drive extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    // Gets values from lambdas
-    double dForward = forward.getAsDouble();
-    double dRotate = rotate.getAsDouble();
-    double dThrottle = throttle.getAsDouble() / -2 + 0.5;
-
-    // Sends values to drive method.
-    // If the auto align button is not pressed, do normal drive, otherwise, do auto
-    // align
-    if (!alignTrigger.getAsBoolean()) {
-      m_drivetrain.setPower(dThrottle * (dForward - dRotate), dThrottle * (dForward + dRotate));
-    } else {
-      autoAlign();
-    }
-
+    autoAlign();
   }
 
-  /**
-   * Align the robot with the center of the target and move to the proper range
-   */
   private void autoAlign() {
     double rawTurn = m_visionTracking.getTurn();
     double distFromTarget = m_ultrasonics.getUltrasonic1() - Constants.Shooter.firingRange;
@@ -86,18 +56,17 @@ public class Drive extends CommandBase {
     if (Math.abs(rawTurn) >= Constants.Vision.alignmentOffset
         || Math.abs(distFromTarget) >= Constants.Vision.distanceOffset) {
       double turn = rawTurn * Constants.Autonomous.autoTurnRate;
-
-      // double power = Math.abs(distFromTarget) >= Constants.Vision.distanceOffset
-      // ? Constants.Autonomous.autoDriveSpeed * Math.copySign(1, distFromTarget)
-      // : 0;
-      double power = 0;
-
-      m_drivetrain.setPower(power - (turn + Constants.Autonomous.autoTurnRateAddition),
-          -power + (turn + Constants.Autonomous.autoTurnRateAddition));
+      // double turn2 = (Constants.Vision.camSize[0]/10.0 - (rawTurn)/10.0) *
+      // Constants.Autonomous.autoTurnRate * Math.copySign(1, rawTurn);
+      double power = Math.abs(distFromTarget) >= Constants.Vision.distanceOffset
+          ? Constants.Autonomous.autoDriveSpeed * Math.copySign(1, distFromTarget)
+          : 0;
+      m_drivetrain.setPower(power - (turn), -power + (turn));
 
       SmartDashboard.putBoolean("Aligned", false);
     } else {
       SmartDashboard.putBoolean("Aligned", true);
+      isFinished = true;
     }
 
   }
@@ -110,6 +79,6 @@ public class Drive extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return isFinished;
   }
 }

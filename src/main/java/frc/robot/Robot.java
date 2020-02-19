@@ -7,25 +7,19 @@
 
 package frc.robot;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-
-import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.vision.VisionThread;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
-import frc.robot.commands.Vision;
+import frc.robot.commands.Elevate;
+import frc.robot.commands.Shoot;
 import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Spinner;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
@@ -48,9 +42,13 @@ public class Robot extends TimedRobot {
   private ColorSensor m_colorSensor;
   private Ultrasonics m_ultrasonics;
   private Spinner m_spinner;
+  private Shooter m_shooter;
 
   private Drive m_drive;
   private ColorSense m_colorSense;
+  private Shoot m_shoot;
+  private Elevate m_elevate;
+  private Command m_autoCommandGroup;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -73,9 +71,13 @@ public class Robot extends TimedRobot {
     m_colorSensor = m_robotContainer.m_colorSensor;
     m_ultrasonics = m_robotContainer.m_ultrasonics;
     m_spinner = m_robotContainer.m_spinner;
+    m_shooter = m_robotContainer.m_shooter;
 
     m_drive = m_robotContainer.m_drive;
     m_colorSense = m_robotContainer.m_colorSense;
+    m_shoot = m_robotContainer.m_shoot;
+    m_elevate = m_robotContainer.m_elevate;
+    m_autoCommandGroup = m_robotContainer.m_autoCommandGroup;
 
     
     //cam.setBrightness(1);
@@ -111,10 +113,12 @@ public class Robot extends TimedRobot {
     //Cancels the normal Teleop drive command
     m_drive.cancel();
     m_colorSense.cancel();
+    m_shoot.cancel();
+    m_elevate.cancel();
+    m_autoCommandGroup.schedule();
   }
 
   /**
-
     * This function is called periodically during autonomous.
    */
   @Override
@@ -127,6 +131,9 @@ public class Robot extends TimedRobot {
     //Start the Teleop drive command
     m_drive.schedule();
     m_colorSense.schedule();
+    m_shoot.schedule();
+    m_elevate.schedule();
+    m_autoCommandGroup.cancel();
   }
 
   /**

@@ -8,10 +8,10 @@
 package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Spinner;
 
@@ -26,7 +26,7 @@ public class ColorSense extends CommandBase {
   String desiredColor;
   int desiredColorNum = 0;
   int selectedColor = 0;
-  int desiredRotations = 0;
+  int desiredRotations = 4;
   boolean rotationTime;
   boolean colorTime;
 
@@ -45,6 +45,9 @@ public class ColorSense extends CommandBase {
     addRequirements(colorSensor);
     addRequirements(spinner);
 
+    desiredColor = getSelectedColorString(desiredColorNum);
+
+
   }
 
   // Called when the command is initially scheduled.
@@ -57,37 +60,61 @@ public class ColorSense extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    rotationTime = startRotationControl.getAsBoolean() && !colorTime;
-    colorTime = !(startColorControl.getAsBoolean() && !rotationTime) ? false : true;
+    // rotationTime = startRotationControl.getAsBoolean() && !colorTime;
+    // // colorTime = !(startColorControl.getAsBoolean() && !rotationTime) ? !true ? false:true : !false ? true:false;
+    // colorTime = startColorControl.getAsBoolean() && !rotationTime;
+
+    if(startColorControl.getAsBoolean() && !rotationTime) {
+      colorTime = !colorTime;
+    }
+
+    if(startRotationControl.getAsBoolean() && !colorTime) {
+      rotationTime = !rotationTime;
+      m_colorSensor.resetIndex();
+    }
 
     if (rotationTime) {
+      
       m_colorSensor.setRotationControl(true);
-      m_spinner.setPower(50);
+      m_spinner.setPower(Constants.spinnerSpeed);
 
       if(m_colorSensor.getTotalRotations() >= desiredRotations) {
         rotationTime = false;
       }
     } else if (colorTime) {
-      m_spinner.setPower(50);
-      colorTime = !m_colorSensor.checkColorMatch(desiredColor);
+      m_spinner.setPower(Constants.spinnerSpeed);
+      colorTime = !m_colorSensor.checkColorMatch(getSelectedColorString((desiredColorNum + 3) % 4));
     } else {
       m_colorSensor.setRotationControl(false);
       m_spinner.setPower(0);
     }
 
+    SmartDashboard.putNumber("Number of Rotations", m_colorSensor.getTotalRotations());
+
+    updateSelectedColor();
+
+    // checkSwitchColor();
+  }
+
+  void updateSelectedColor() {
     if (selectNextColor.getAsBoolean()) {
       desiredColorNum = (desiredColorNum + 1) % 4;
-      if (desiredColorNum == 0)
-        desiredColor = "Red";
-      else if (desiredColorNum == 1)
-        desiredColor = "Yellow";
-      else if (desiredColorNum == 2)
-        desiredColor = "Green";
-      else if (desiredColorNum == 3)
-        desiredColor = "Blue";
-      SmartDashboard.putString("Selected Color", desiredColor);
+      desiredColor = getSelectedColorString(desiredColorNum);
     }
-    // checkSwitchColor();
+
+    SmartDashboard.putString("Selected Color", desiredColor);
+  }
+
+  private String getSelectedColorString(int num) {
+    if (num == 0)
+      return "Red";
+    else if (num == 1)
+      return "Yellow";
+    else if (num == 2)
+      return "Blue";
+    else if (num == 3)
+      return "Green";
+    return "None";
   }
 
   // Called once the command ends or is interrupted.

@@ -7,7 +7,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.ColorMatch;
 import com.revrobotics.ColorMatchResult;
@@ -32,9 +31,11 @@ public class ColorSensor extends SubsystemBase {
 
   private TalonSRX spinner;
 
-  private Boolean prev_yellow = false;
+  private Boolean prevRed = false;
 
   private Boolean rotation_control = false;
+
+  private String currentColor = "";
 
 
   /**
@@ -46,6 +47,8 @@ public class ColorSensor extends SubsystemBase {
     m_colorMatcher.addColorMatch(Constants.Colors.kRedTarget);
     m_colorMatcher.addColorMatch(Constants.Colors.kYellowTarget);
 
+    updateColorString();
+
     // spinner = new TalonSRX(Constants.Talons.IDs.spinner);
   }
 
@@ -54,20 +57,7 @@ public class ColorSensor extends SubsystemBase {
    * @return The current color; either red, green, blue, or yellow
    */
   public String getColorString() {
-    // Gets raw color
-    Color detectedColor = m_colorSensor.getColor();
-    // Processes the color
-    ColorMatchResult match = m_colorMatcher.matchClosestColor(detectedColor);
-    // Checks if the processed color matches one of the preset
-    if (match.color == Constants.Colors.kYellowTarget)
-      return "Yellow";
-    if (match.color == Constants.Colors.kRedTarget)
-      return "Red";
-    if (match.color == Constants.Colors.kGreenTarget)
-      return "Green";
-    if (match.color == Constants.Colors.kBlueTarget)
-      return "Blue";
-    return "None";
+    return currentColor;
   }
 
   @Override
@@ -76,9 +66,32 @@ public class ColorSensor extends SubsystemBase {
     if(rotation_control) {
       checkRotation();
     }
-    SmartDashboard.putString("Current  Color", getColorString());
+    updateColorString();
+  
+    // SmartDashboard.putNumber("Number of Rotations", rotationControlIndex);
   }
 
+  private void updateColorString() {
+    Color detectedColor = m_colorSensor.getColor();
+    //  System.out.println(String.format("Detected Color: %s %s %s", detectedColor.red, detectedColor.green, detectedColor.blue));
+    // Processes the color
+    ColorMatchResult match = m_colorMatcher.matchClosestColor(detectedColor);
+    // System.out.println(String.format("Matched Color: %s %s %s", match.color.red, match.color.green, match.color.blue));
+    // Checks if the processed color matches one of the preset
+    if (match.color.equals(Constants.Colors.kYellowTarget))
+      currentColor = "Yellow";
+    else if (match.color.equals(Constants.Colors.kRedTarget))
+      currentColor = "Red";
+    else if (match.color.equals(Constants.Colors.kGreenTarget))
+      currentColor = "Green";
+    else if (match.color.equals(Constants.Colors.kBlueTarget))
+      currentColor = "Blue";
+    else currentColor = "None";
+
+    SmartDashboard.putString("Current Color", currentColor);
+  }
+ 
+  
   /**
    * Resets the rotation control index
    */
@@ -90,7 +103,7 @@ public class ColorSensor extends SubsystemBase {
    * @return The total number of rotations that have been seen by the color sensor
    */
   public int getTotalRotations() {
-    return rotationControlIndex % 2;
+    return rotationControlIndex/2;
   }
 
   public void setRotationControl(Boolean value) {
@@ -98,21 +111,13 @@ public class ColorSensor extends SubsystemBase {
   }
 
   private void checkRotation() {
-    if(!prev_yellow && getColorString() == "Yellow") {
-      prev_yellow = true;
+    if(!prevRed && checkColorMatch("Red")) {
+      prevRed = true;
       rotationControlIndex++;
 
-    } else if(getColorString() != "Yellow") {
-      prev_yellow = false;
+    } else if(!checkColorMatch("Red")) {
+      prevRed = false;
     }
-  }
-
-
-  public Boolean rotationControl(){
-    // spinner.set(ControlMode.PercentOutput, 1); // TODO: Pick a better motor power value
-    if (getColorString() == "Yellow")
-      rotationControlIndex++;
-    return rotationControlIndex > 4;
   }
 
     /**
@@ -121,8 +126,7 @@ public class ColorSensor extends SubsystemBase {
    * @return Whether or not the colors match 
    */
   public Boolean checkColorMatch(String desiredColor){
-    // spinner.set(ControlMode.PercentOutput, 1); // TODO: Pick a better motor power value
-    return getColorString().equalsIgnoreCase(desiredColor);
+    return currentColor.equalsIgnoreCase(desiredColor);
   }
 
 }

@@ -7,21 +7,14 @@
 
 package frc.robot.commands;
 
-import frc.robot.subsystems.VisionTracking;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.Drivetrain;
-import frc.robot.Constants;
-import frc.robot.Pipeline;
-
 import java.util.function.BooleanSupplier;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-
-import edu.wpi.cscore.CvSource;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.vision.VisionThread;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.VisionTracking;
 
 public class Vision extends CommandBase {
   VisionTracking m_visionTracking;

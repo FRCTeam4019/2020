@@ -10,24 +10,25 @@ package frc.robot.commands;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants;
 import frc.robot.subsystems.Shooter;
 
 public class Shoot extends CommandBase {
   private final Shooter m_shooter;
   private final BooleanSupplier m_fireButton;
   private final BooleanSupplier m_intakeButton;
+  private final BooleanSupplier m_reverseButton;
 
   /**
    * Creates a new Shoot.
    */
-  public Shoot(Shooter shooter, BooleanSupplier fireButton, BooleanSupplier intakeButton) {
+  public Shoot(Shooter shooter, BooleanSupplier fireButton, BooleanSupplier intakeButton, BooleanSupplier reverseButton) {
     // Use addRequirements() here to declare subsystem dependencies.
 
     m_shooter = shooter;
 
     m_fireButton = fireButton;
     m_intakeButton = intakeButton;
+    m_reverseButton = reverseButton;
 
     addRequirements(shooter);
   }
@@ -41,12 +42,12 @@ public class Shoot extends CommandBase {
   @Override
   public void execute() {
     if(m_fireButton.getAsBoolean()) 
-      m_shooter.fireAllWeapons();
+      m_shooter.openFire();
+    else if(m_intakeButton.getAsBoolean())
+      m_shooter.startIntake();
+    else if(m_reverseButton.getAsBoolean())
+      m_shooter.vomit();
     else m_shooter.ceaseFire();
-    
-    if(m_intakeButton.getAsBoolean())
-      m_shooter.setIntakePower(Constants.Shooter.intakeIntakePower);
-    else m_shooter.setIntakePower(0);
   }
 
   // Called once the command ends or is interrupted.

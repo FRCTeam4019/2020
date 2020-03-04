@@ -28,19 +28,19 @@ public class Drivetrain extends SubsystemBase {
    */
 
   TalonSRX tLF;
-  TalonSRX tLB;
+  // TalonSRX tLB;
   TalonSRX tRF;
-  TalonSRX tRB;
+  // TalonSRX tRB;
 
   double centerX;
 
   // The left-side drive encoder
-  private final Encoder m_leftEncoder = new Encoder(Constants.Autonomous.kLeftEncoderPorts[0],
-      Constants.Autonomous.kLeftEncoderPorts[1], Constants.Autonomous.kLeftEncoderReversed);
+  private final Encoder m_leftEncoder = new Encoder(Constants.Motors.Encoders.kLeftEncoderPorts[0],
+      Constants.Motors.Encoders.kLeftEncoderPorts[1], Constants.Motors.Inversions.kLeftEncoderReversed);
 
   // The right-side drive encoder
-  private final Encoder m_rightEncoder = new Encoder(Constants.Autonomous.kRightEncoderPorts[0],
-      Constants.Autonomous.kRightEncoderPorts[1], Constants.Autonomous.kRightEncoderReversed);
+  private final Encoder m_rightEncoder = new Encoder(Constants.Motors.Encoders.kRightEncoderPorts[0],
+      Constants.Motors.Encoders.kRightEncoderPorts[1], Constants.Motors.Inversions.kRightEncoderReversed);
 
   // The gyro sensor
   private final Gyro m_gyro = new ADXRS450_Gyro();
@@ -50,22 +50,22 @@ public class Drivetrain extends SubsystemBase {
 
   public Drivetrain() {
 
-    tLF = new TalonSRX(Constants.Talons.IDs.leftFront);
-    tLB = new TalonSRX(Constants.Talons.IDs.leftBack);
-    tRF = new TalonSRX(Constants.Talons.IDs.rightFront);
-    tRB = new TalonSRX(Constants.Talons.IDs.rightBack);
+    tLF = new TalonSRX(Constants.Motors.IDs.leftFront);
+    // tLB = new TalonSRX(Constants.Motors.IDs.leftBack);
+    tRF = new TalonSRX(Constants.Motors.IDs.rightFront);
+    // tRB = new TalonSRX(Constants.Motors.IDs.rightBack);
 
-    tLB.follow(tLF);
-    tRB.follow(tRF);
+    // tLB.follow(tLF);
+    // tRB.follow(tRF);
 
-    tLF.setInverted(Constants.Talons.Inversions.leftFront);
-    tLB.setInverted(Constants.Talons.Inversions.leftBack);
-    tRF.setInverted(Constants.Talons.Inversions.rightFront);
-    tRB.setInverted(Constants.Talons.Inversions.rightBack);
+    tLF.setInverted(Constants.Motors.Inversions.leftFront);
+    // tLB.setInverted(Constants.Motors.Inversions.leftBack);
+    tRF.setInverted(Constants.Motors.Inversions.rightFront);
+    // tRB.setInverted(Constants.Motors.Inversions.rightBack);
 
     // Sets the distance per pulse for the encoders
-    m_leftEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
-    m_rightEncoder.setDistancePerPulse(Constants.Autonomous.kEncoderDistancePerPulse);
+    m_leftEncoder.setDistancePerPulse(Constants.Stats.kEncoderDistancePerPulse);
+    m_rightEncoder.setDistancePerPulse(Constants.Stats.kEncoderDistancePerPulse);
 
     m_leftEncoder.setMinRate(5);
     m_rightEncoder.setMinRate(5);
@@ -123,21 +123,20 @@ public class Drivetrain extends SubsystemBase {
    * @param rot the commanded rotation
    */
   public void arcadeDrive(double fwd, double rot) {
-    setPower(Constants.Autonomous.autoDriveSpeed + (rot),
-        -Constants.Autonomous.autoDriveSpeed + (rot));
+    setPower(Constants.Autonomous.autoDriveSpeed + (rot), -Constants.Autonomous.autoDriveSpeed + (rot));
   }
 
   /**
    * Controls the left and right sides of the drive directly with voltages.
-   *
+   * 
    * @param leftVolts  the commanded left output
    * @param rightVolts the commanded right output
    */
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     tLF.set(ControlMode.Current, leftVolts);
-    tLB.set(ControlMode.Current, leftVolts);
+    // tLB.set(ControlMode.Current, leftVolts);
     tRF.set(ControlMode.Current, rightVolts);
-    tRB.set(ControlMode.Current, rightVolts);
+    // tRB.set(ControlMode.Current, rightVolts);
   }
 
   /**
@@ -198,7 +197,7 @@ public class Drivetrain extends SubsystemBase {
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    return Math.IEEEremainder(m_gyro.getAngle(), 360) * (Constants.Autonomous.kGyroReversed ? -1.0 : 1.0);
+    return Math.IEEEremainder(m_gyro.getAngle(), 360) * (Constants.Stats.kGyroReversed ? -1.0 : 1.0);
   }
 
   /**
@@ -207,6 +206,6 @@ public class Drivetrain extends SubsystemBase {
    * @return The turn rate of the robot, in degrees per second
    */
   public double getTurnRate() {
-    return m_gyro.getRate() * (Constants.Autonomous.kGyroReversed ? -1.0 : 1.0);
+    return m_gyro.getRate() * (Constants.Stats.kGyroReversed ? -1.0 : 1.0);
   }
 }

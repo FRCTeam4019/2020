@@ -9,16 +9,18 @@ package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants;
 import frc.robot.subsystems.ColorSensor;
-import frc.robot.subsystems.Spinner;
+/**
+ * This subsystem is used to control the color wheel with rotation control and
+ * color control.
+ */
 
 public class ColorSense extends CommandBase {
 
   private final ColorSensor m_colorSensor;
-  private final Spinner m_spinner;
   private final BooleanSupplier startRotationControl;
   private final BooleanSupplier startColorControl;
   private final BooleanSupplier selectNextColor;
@@ -30,24 +32,30 @@ public class ColorSense extends CommandBase {
   boolean rotationTime;
   boolean colorTime;
 
+  SendableChooser<Integer> colorSelector;
+
   /**
    * Creates a new ColorSense.
    */
-  public ColorSense(ColorSensor colorSensor, Spinner spinner, BooleanSupplier startRotationControl, BooleanSupplier startColorControl,
+  public ColorSense(ColorSensor colorSensor, BooleanSupplier startRotationControl, BooleanSupplier startColorControl,
       BooleanSupplier selectNextColor) {
     this.m_colorSensor = colorSensor;
-    this.m_spinner = spinner;
     this.startRotationControl = startRotationControl;
     this.startColorControl = startColorControl;
     this.selectNextColor = selectNextColor;
     // Use addRequirements() here to declare subsystem dependencies.
-    // addRequirements();
     addRequirements(colorSensor);
-    addRequirements(spinner);
 
-    desiredColor = getSelectedColorString(desiredColorNum);
+    desiredColor = m_colorSensor.intToColorString(desiredColorNum);
 
+    colorSelector = new SendableChooser<Integer>();
 
+    colorSelector.addOption("Red", 0);
+    colorSelector.addOption("Green", 1);
+    colorSelector.addOption("Blue", 2);
+    colorSelector.addOption("Yeetlow", 3);
+
+    SmartDashboard.putData("Selected Color 1", colorSelector);
   }
 
   // Called when the command is initially scheduled.
@@ -60,61 +68,47 @@ public class ColorSense extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // rotationTime = startRotationControl.getAsBoolean() && !colorTime;
-    // // colorTime = !(startColorControl.getAsBoolean() && !rotationTime) ? !true ? false:true : !false ? true:false;
-    // colorTime = startColorControl.getAsBoolean() && !rotationTime;
+    // The almighty ternerary
+    // // colorTime = !(startColorControl.getAsBoolean() && !rotationTime) ? !true ?
+    // false:true : !false ? true:false;
 
-    if(startColorControl.getAsBoolean() && !rotationTime) {
+    // Only starts the color control command if the rotation control command is not
+    // currently running
+    if (startColorControl.getAsBoolean() && !rotationTime) {
       colorTime = !colorTime;
     }
 
-    if(startRotationControl.getAsBoolean() && !colorTime) {
+    // Only starts the rotation control command if the color control command is not
+    // currently running
+    if (startRotationControl.getAsBoolean() && !colorTime) {
       rotationTime = !rotationTime;
-      m_colorSensor.resetIndex();
     }
 
     if (rotationTime) {
-      
-      m_colorSensor.setRotationControl(true);
-      m_spinner.setPower(Constants.spinnerSpeed);
-
-      if(m_colorSensor.getTotalRotations() >= desiredRotations) {
-        rotationTime = false;
-      }
+      rotationTime = m_colorSensor.rotate(desiredRotations);
     } else if (colorTime) {
-      m_spinner.setPower(Constants.spinnerSpeed);
-      colorTime = !m_colorSensor.checkColorMatch(getSelectedColorString((desiredColorNum + 3) % 4));
+      colorTime = m_colorSensor.goToColor(desiredColorNum); 
     } else {
-      m_colorSensor.setRotationControl(false);
-      m_spinner.setPower(0);
+      // Turns everything off
+      m_colorSensor.stopAll();
     }
-
-    SmartDashboard.putNumber("Number of Rotations", m_colorSensor.getTotalRotations());
 
     updateSelectedColor();
-
-    // checkSwitchColor();
   }
 
-  void updateSelectedColor() {
-    if (selectNextColor.getAsBoolean()) {
-      desiredColorNum = (desiredColorNum + 1) % 4;
-      desiredColor = getSelectedColorString(desiredColorNum);
-    }
+  /**
+   * Checks if the the next color button has been pressed, and if so updates it
+   */
+  private void updateSelectedColor() {
+    // if (selectNextColor.getAsBoolean()) {
+    //   desiredColorNum = (desiredColorNum + 1) % 4;
+    //   desiredColor = m_colorSensor.intToColorString(desiredColorNum);
+    // }
 
-    SmartDashboard.putString("Selected Color", desiredColor);
-  }
+    desiredColorNum = colorSelector.getSelected();
+    desiredColor = m_colorSensor.intToColorString(desiredColorNum);
 
-  private String getSelectedColorString(int num) {
-    if (num == 0)
-      return "Red";
-    else if (num == 1)
-      return "Yellow";
-    else if (num == 2)
-      return "Blue";
-    else if (num == 3)
-      return "Green";
-    return "None";
+    // SmartDashboard.putString("Selected Color", desiredColor);
   }
 
   // Called once the command ends or is interrupted.
@@ -127,24 +121,4 @@ public class ColorSense extends CommandBase {
   public boolean isFinished() {
     return false;
   }
-
-  /*
-   * private void checkSwitchColor() { if
-   * (Robot.m_leftStick.getRawButton(RobotMap.NEXT_COLOR_BUTTON_ID)) {
-   * selectedColor++; System.out.print("Selection changed: " + selectedColor);
-   * 
-   * if (selectedColor == 0) { SmartDashboard.putString("Selected Color", "Blue");
-   * }
-   * 
-   * if (selectedColor == 1) { SmartDashboard.putString("Selected Color",
-   * "Green"); }
-   * 
-   * if (selectedColor == 2) { SmartDashboard.putString("Selected Color", "Red");
-   * }
-   * 
-   * if (selectedColor == 3) { SmartDashboard.putString("Selected Color",
-   * "Yellow"); }
-   * 
-   * // desiredColorNum = Robot.m_colorsensor.getActualColor(selectedColor); } }
-   */
 }

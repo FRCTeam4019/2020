@@ -15,6 +15,12 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 
+/**
+ * This command is used to align the robot with the vision target, get it to the
+ * proper distance, and then fire. This should be in a sequential command group
+ * after the PathWeaver command.
+ */
+
 public class Autonomous extends CommandBase {
 
   private final Drivetrain m_drivetrain;
@@ -56,17 +62,16 @@ public class Autonomous extends CommandBase {
     if (Math.abs(rawTurn) >= Constants.Vision.alignmentOffset
         || Math.abs(distFromTarget) >= Constants.Vision.distanceOffset) {
       double turn = rawTurn * Constants.Autonomous.autoTurnRate;
-      // double turn2 = (Constants.Vision.camSize[0]/10.0 - (rawTurn)/10.0) *
-      // Constants.Autonomous.autoTurnRate * Math.copySign(1, rawTurn);
       double power = Math.abs(distFromTarget) >= Constants.Vision.distanceOffset
-          ? Constants.Autonomous.autoDriveSpeed * Math.copySign(1, distFromTarget)
+          ? Constants.Autonomous.autoDriveSpeed * Math.signum(distFromTarget)
           : 0;
       m_drivetrain.setPower(power - (turn), -power + (turn));
+      m_shooter.ceaseFire();
 
       SmartDashboard.putBoolean("Aligned", false);
     } else {
       SmartDashboard.putBoolean("Aligned", true);
-      isFinished = true;
+      m_shooter.openFire();
     }
 
   }

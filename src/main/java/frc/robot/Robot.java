@@ -20,7 +20,6 @@ import frc.robot.commands.Shoot;
 import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Spinner;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
 
@@ -33,7 +32,6 @@ import frc.robot.subsystems.VisionTracking;
  * project.
  */
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
 
@@ -41,7 +39,6 @@ public class Robot extends TimedRobot {
   private VisionTracking m_visiontracking;
   private ColorSensor m_colorSensor;
   private Ultrasonics m_ultrasonics;
-  private Spinner m_spinner;
   private Shooter m_shooter;
 
   private Drive m_drive;
@@ -60,6 +57,7 @@ public class Robot extends TimedRobot {
     // and put our
     // autonomous chooser on the dashboard.
     UsbCamera cam = CameraServer.getInstance().startAutomaticCapture();
+    UsbCamera cam2 = CameraServer.getInstance().startAutomaticCapture();
     cam.setResolution(Constants.Vision.camSize[0], Constants.Vision.camSize[1]);
     //cam.setExposureManual(1);
     cam.setExposureAuto();
@@ -70,7 +68,6 @@ public class Robot extends TimedRobot {
     m_visiontracking = m_robotContainer.m_visiontracking;
     m_colorSensor = m_robotContainer.m_colorSensor;
     m_ultrasonics = m_robotContainer.m_ultrasonics;
-    m_spinner = m_robotContainer.m_spinner;
     m_shooter = m_robotContainer.m_shooter;
 
     m_drive = m_robotContainer.m_drive;
@@ -115,7 +112,8 @@ public class Robot extends TimedRobot {
     m_colorSense.cancel();
     m_shoot.cancel();
     m_elevate.cancel();
-    m_autoCommandGroup.schedule();
+    m_autoCommandGroup = m_robotContainer.getAutonomousCommand();
+    m_autoCommandGroup.schedule();  
   }
 
   /**
@@ -123,7 +121,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    SmartDashboard.updateValues();
+    // SmartDashboard.updateValues();
   }
   
   @Override
@@ -133,7 +131,8 @@ public class Robot extends TimedRobot {
     m_colorSense.schedule();
     m_shoot.schedule();
     m_elevate.schedule();
-    m_autoCommandGroup.cancel();
+    if(m_autoCommandGroup != null)
+        m_autoCommandGroup.cancel();
   }
 
   /**

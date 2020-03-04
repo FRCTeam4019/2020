@@ -13,6 +13,10 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+/**
+ * This subsystem controls the elevation system for the hangar
+ */
+
 public class Elevator extends SubsystemBase {
   private final TalonSRX leftMotor;
   private final TalonSRX rightMotor;
@@ -21,8 +25,10 @@ public class Elevator extends SubsystemBase {
    */
   public Elevator() {
 
-    leftMotor = new TalonSRX(Constants.Talons.IDs.leftElevator);
-    rightMotor = new TalonSRX(Constants.Talons.IDs.rightElevator);
+    leftMotor = new TalonSRX(Constants.Motors.IDs.leftElevator);
+    leftMotor.setInverted(Constants.Motors.Inversions.leftElevator);
+    rightMotor = new TalonSRX(Constants.Motors.IDs.rightElevator);
+    rightMotor.setInverted(Constants.Motors.Inversions.rightElevator);
   }
 
   public void setPower(double power) {

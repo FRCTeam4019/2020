@@ -21,9 +21,6 @@ import frc.robot.subsystems.VisionTracking;
  * Command class in charge of calling methods related to driving.
  */
 public class Drive extends CommandBase {
-  /**
-   * Creates a new Drive.
-   */
   private final Drivetrain m_drivetrain;
   private final VisionTracking m_visionTracking;
   private final Ultrasonics m_ultrasonics;
@@ -33,7 +30,16 @@ public class Drive extends CommandBase {
   private final DoubleSupplier throttle;
   private final BooleanSupplier alignTrigger;
 
-  // Constructor
+  /**
+   * Command class in charge of calling methods related to driving.
+   * @param drivetrain Subsystem with drive methods
+   * @param visionTracking Subsystem for vision processing
+   * @param ultrasonics Subsystem for ultrasonic value
+   * @param forward Magnitude value from the joystick
+   * @param rotate Direction value from the joystick
+   * @param throttle Throttle value from the joystick (acts as multiplier)
+   * @param alignTrigger Button to activate auto align for shooting
+   */
   public Drive(Drivetrain drivetrain, VisionTracking visionTracking, Ultrasonics ultrasonics, DoubleSupplier forward,
       DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger) {
 
@@ -90,10 +96,11 @@ public class Drive extends CommandBase {
       // double power = Math.abs(distFromTarget) >= Constants.Vision.distanceOffset
       // ? Constants.Autonomous.autoDriveSpeed * Math.copySign(1, distFromTarget)
       // : 0;
-      double power = 0;
-
-      m_drivetrain.setPower(power - (turn + Constants.Autonomous.autoTurnRateAddition),
-          -power + (turn + Constants.Autonomous.autoTurnRateAddition));
+      double power = Constants.Autonomous.autoDriveSpeed * throttle.getAsDouble()
+          + Constants.Autonomous.autoTurnRateAddition;
+      
+      // TODO: Find out why power is negative
+      m_drivetrain.setPower(power - (turn), -power + (turn));
 
       SmartDashboard.putBoolean("Aligned", false);
     } else {

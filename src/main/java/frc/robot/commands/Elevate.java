@@ -12,6 +12,9 @@ import java.util.function.BooleanSupplier;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Elevator;
 
+/**
+ * This command controls the elevator mechanism
+ */
 public class Elevate extends CommandBase {
   private final Elevator m_elevator;
   private final BooleanSupplier m_upButton;

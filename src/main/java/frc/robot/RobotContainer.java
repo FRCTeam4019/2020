@@ -7,47 +7,41 @@
 
 package frc.robot;
 
-import frc.robot.Constants;
-
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.Autonomous;
 import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
 import frc.robot.commands.Elevate;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.Shoot;
-import frc.robot.commands.Vision;
 import frc.robot.subsystems.ColorSensor;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Spinner;
 import frc.robot.subsystems.Ultrasonics;
 import frc.robot.subsystems.VisionTracking;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -59,22 +53,24 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  public static final Drivetrain m_drivetrain = new Drivetrain();
-  public static final VisionTracking m_visiontracking = new VisionTracking();
-  public static final ColorSensor m_colorSensor = new ColorSensor();
-  public static final Ultrasonics m_ultrasonics = new Ultrasonics();
-  public static final Spinner m_spinner = new Spinner();
-  public static final Shooter m_shooter = new Shooter();
-  public static final Elevator m_elevator = new Elevator();
+  public final Drivetrain m_drivetrain = new Drivetrain();
+  public final VisionTracking m_visiontracking = new VisionTracking();
+  public final ColorSensor m_colorSensor = new ColorSensor();
+  public final Ultrasonics m_ultrasonics = new Ultrasonics();
+  public final Shooter m_shooter = new Shooter();
+  public final Elevator m_elevator = new Elevator();
 
-  public static Drive m_drive;
-  public static ColorSense m_colorSense;
-  public static Autonomous m_autoCommand;
-  public static Shoot m_shoot;
-  public static Elevate m_elevate;
-  public static Command m_autoCommandGroup;
+  public Drive m_drive;
+  public ColorSense m_colorSense;
+  public Autonomous m_autoCommand;
+  public Shoot m_shoot;
+  public Elevate m_elevate;
+  public Command m_autoCommandGroup;
 
   public final Joystick m_drivestick = new Joystick(0);
+
+  // NetworkTableEntry autonomousSelector;
+  SendableChooser<Integer> autonomousSelector;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -83,8 +79,22 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     m_autoCommand = new Autonomous(m_drivetrain, m_shooter, m_visiontracking, m_ultrasonics);
-    m_autoCommandGroup = getAutonomousCommand();
 
+    String[] options = { "Drive foward", "Drive and Shoot" };
+
+    // autonomousSelector = Shuffleboard.getTab("SmartDashboard")
+    // .add("Autonomous Selector", 0)
+    // .withWidget(BuiltInWidgets.kComboBoxChooser)
+    // .getEntry();
+    // autonomousSelector.forceSetStringArray(options);
+
+    autonomousSelector = new SendableChooser<Integer>();
+
+    autonomousSelector.addOption("Drive Foward", 0);
+    autonomousSelector.addOption("Drive and Shoot Pos 1", 1);
+    autonomousSelector.addOption("Drive and Shoot Pos 2", 2);
+    autonomousSelector.addOption("Drive and Shoot Pos 3", 3);
+    SmartDashboard.putData("Autonomous Selector 1", autonomousSelector);
   }
 
   /**
@@ -98,20 +108,18 @@ public class RobotContainer {
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
-        // This is the trigger for auto align
         () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
 
-    m_colorSense = new ColorSense(m_colorSensor, m_spinner,
+    m_colorSense = new ColorSense(m_colorSensor,
         () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
         () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
         () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
-    
-    m_shoot = new Shoot(m_shooter,
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.intake));
 
-    m_elevate = new Elevate(m_elevator, 
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp), 
+    m_shoot = new Shoot(m_shooter, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.intake),
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.reverse));
+
+    m_elevate = new Elevate(m_elevator, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp),
         () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorDown));
   }
 
@@ -121,56 +129,116 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    if (autonomousSelector.getSelected() == 1) {
+      Trajectory trajectory = null;
+
+      // Get the pathweaver JSON file from the file system and convert it to a path
+      try {
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
+            .resolve(Constants.Autonomous.TrajectoryPaths.driveAndShoot1JSON);
+        trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+      } catch (IOException ex) {
+        DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveAndShoot1JSON,
+            ex.getStackTrace());
+      }
+
+      RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
+          new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
+          new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
+              Constants.Stats.kaVoltSecondsSquaredPerMeter),
+          Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
+          new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
+          // RamseteCommand passes volts to the callback
+          m_drivetrain::tankDriveVolts, m_drivetrain);
+
+      // Run path following command, then stop at the end.
+      // return ramseteCommand;
+
+      return new SequentialCommandGroup(ramseteCommand, m_autoCommand);
+
+    }
+    if (autonomousSelector.getSelected() == 2) {
+      Trajectory trajectory = null;
+
+      // Get the pathweaver JSON file from the file system and convert it to a path
+      try {
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
+            .resolve(Constants.Autonomous.TrajectoryPaths.driveAndShoot2JSON);
+        trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+      } catch (IOException ex) {
+        DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveAndShoot2JSON,
+            ex.getStackTrace());
+      }
+
+      RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
+          new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
+          new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
+              Constants.Stats.kaVoltSecondsSquaredPerMeter),
+          Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
+          new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
+          // RamseteCommand passes volts to the callback
+          m_drivetrain::tankDriveVolts, m_drivetrain);
+
+      // Run path following command, then stop at the end.
+      // return ramseteCommand;
+
+      return new SequentialCommandGroup(ramseteCommand, m_autoCommand);
+    } 
+    if (autonomousSelector.getSelected() == 3) {
+      Trajectory trajectory = null;
+
+      // Get the pathweaver JSON file from the file system and convert it to a path
+      try {
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
+            .resolve(Constants.Autonomous.TrajectoryPaths.driveAndShoot2JSON);
+        trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+      } catch (IOException ex) {
+        DriverStation.reportError(
+            "Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveAndShoot3JSON,
+            ex.getStackTrace());
+      }
+
+      RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
+          new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
+          new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
+              Constants.Stats.kaVoltSecondsSquaredPerMeter),
+          Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
+          new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
+          // RamseteCommand passes volts to the callback
+          m_drivetrain::tankDriveVolts, m_drivetrain);
+
+      // Run path following command, then stop at the end.
+      // return ramseteCommand;
+
+      return new SequentialCommandGroup(ramseteCommand, m_autoCommand);
+
+    }
+    
     Trajectory trajectory = null;
 
     // Get the pathweaver JSON file from the file system and convert it to a path
+
     try {
-      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(Constants.Autonomous.trajectoryJSON);
+      Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
+          .resolve(Constants.Autonomous.TrajectoryPaths.driveFowardJSON);
       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.trajectoryJSON,
+      DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveFowardJSON,
           ex.getStackTrace());
     }
 
-    // Create a voltage constraint to ensure we don't accelerate too fast
-    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
-        new SimpleMotorFeedforward(Constants.Autonomous.ksVolts, Constants.Autonomous.kvVoltSecondsPerMeter,
-            Constants.Autonomous.kaVoltSecondsSquaredPerMeter),
-        Constants.Autonomous.kDriveKinematics, 10);
-
-    // Create config for trajectory
-    TrajectoryConfig config = new TrajectoryConfig(Constants.Autonomous.kMaxSpeedMetersPerSecond,
-        Constants.Autonomous.kMaxAccelerationMetersPerSecondSquared)
-            // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(Constants.Autonomous.kDriveKinematics)
-            // Apply the voltage constraint
-            .addConstraint(autoVoltageConstraint);
-
-    // An example trajectory to follow. All units in meters.
-    // Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-    // // Start at the origin facing the +X direction
-    // new Pose2d(0, 0, new Rotation2d(0)),
-    // // Pass through these two interior waypoints, making an 's' curve path
-    // List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-    // // End 3 meters straight ahead of where we started, facing forward
-    // new Pose2d(3, 0, new Rotation2d(0)),
-    // // Pass config
-    // config);
-
     RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
-        new RamseteController(Constants.Autonomous.kRamseteB, Constants.Autonomous.kRamseteZeta),
-        new SimpleMotorFeedforward(Constants.Autonomous.ksVolts, Constants.Autonomous.kvVoltSecondsPerMeter,
-            Constants.Autonomous.kaVoltSecondsSquaredPerMeter),
-        Constants.Autonomous.kDriveKinematics, m_drivetrain::getWheelSpeeds,
-        new PIDController(Constants.Autonomous.kPDriveVel, 0, 0),
-        new PIDController(Constants.Autonomous.kPDriveVel, 0, 0),
+        new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
+        new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
+            Constants.Stats.kaVoltSecondsSquaredPerMeter),
+        Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
+        new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
         // RamseteCommand passes volts to the callback
         m_drivetrain::tankDriveVolts, m_drivetrain);
 
     // Run path following command, then stop at the end.
     // return ramseteCommand;
 
-    return new SequentialCommandGroup(ramseteCommand, m_autoCommand);
-
+    return ramseteCommand;
   }
 }

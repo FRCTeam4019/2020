@@ -68,6 +68,7 @@ public class RobotContainer {
   public Command m_autoCommandGroup;
 
   public final Joystick m_drivestick = new Joystick(0);
+  public final Joystick m_operatestick = new Joystick(1);
 
   // NetworkTableEntry autonomousSelector;
   SendableChooser<Integer> autonomousSelector;
@@ -110,17 +111,31 @@ public class RobotContainer {
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
         () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
 
+    // m_colorSense = new ColorSense(m_colorSensor,
+    //     () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
+    //     () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
+    //     () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
+
     m_colorSense = new ColorSense(m_colorSensor,
-        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
-        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
-        () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
+        () -> m_operatestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
+        () -> m_operatestick.getRawButtonPressed(Constants.Controls.ButtonIDs.color),
+        () -> m_operatestick.getRawButtonPressed(Constants.Controls.ButtonIDs.nextColor));
 
-    m_shoot = new Shoot(m_shooter, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.intake),
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.reverse));
+    // m_shoot = new Shoot(m_shooter, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
+    //     () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.intake),
+    //     () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.reverse));
 
-    m_elevate = new Elevate(m_elevator, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp),
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorDown));
+    m_shoot = new Shoot(m_shooter,
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.shoot),
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.intake),
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.reverse));
+
+    // m_elevate = new Elevate(m_elevator, () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp),
+    //     () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.elevatorDown));
+
+    m_elevate = new Elevate(m_elevator, 
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.elevatorUp),
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.elevatorDown));
   }
 
   /**

@@ -31,8 +31,8 @@ public class Shooter extends SubsystemBase {
   private final TalonSRX bottomShooter;
   private final TalonSRX hatchMotor;
 
-  private final DigitalInput hatchTopSwitch = new DigitalInput(Constants.Switches.hatchTopSwitch);
-  private final DigitalInput hatchBottomSwitch = new DigitalInput(Constants.Switches.hatchBottomSwitch);
+  // private final DigitalInput hatchTopSwitch = new DigitalInput(Constants.Switches.hatchTopSwitch);
+  // private final DigitalInput hatchBottomSwitch = new DigitalInput(Constants.Switches.hatchBottomSwitch);
 
   private int delayInt = 0;
 
@@ -118,34 +118,34 @@ public class Shooter extends SubsystemBase {
    * 
    * @return Whether or not the hatch is fully open
    */
-  public Boolean openHatch() {
-    // The switch returns true when it is open
-    if (hatchTopSwitch.get()) {
-      hatchMotor.set(ControlMode.PercentOutput, Constants.Shooter.hatchOpenSpeed);
-      return false;
-    }
+  // public Boolean openHatch() {
+  //   // The switch returns true when it is open
+  //   if (hatchTopSwitch.get()) {
+  //     hatchMotor.set(ControlMode.PercentOutput, Constants.Shooter.hatchOpenSpeed);
+  //     return false;
+  //   }
 
-    hatchMotor.set(ControlMode.PercentOutput, 0);
+  //   hatchMotor.set(ControlMode.PercentOutput, 0);
 
-    return true;
-  }
+  //   return true;
+  // }
 
   /**
    * Runs the hatch motor until the bottom limit switch has been hit
    * 
    * @return Whether or not the hatch is fully closed
    */
-  public Boolean closeHatch() {
-    // The switch returns true when it is open
-    if (hatchBottomSwitch.get()) {
-      hatchMotor.set(ControlMode.PercentOutput, Constants.Shooter.hatchCloseSpeed);
-      return false;
-    }
+  // public Boolean closeHatch() {
+  //   // The switch returns true when it is open
+  //   // if (hatchBottomSwitch.get()) {
+  //     hatchMotor.set(ControlMode.PercentOutput, Constants.Shooter.hatchCloseSpeed);
+  //     return false;
+  //   }
 
-    hatchMotor.set(ControlMode.PercentOutput, 0);
+  //   hatchMotor.set(ControlMode.PercentOutput, 0);
 
-    return true;
-  }
+  //   return true;
+  // }
 
   /**
    * <b>Does the following:</b>

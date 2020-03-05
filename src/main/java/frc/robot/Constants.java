@@ -38,7 +38,7 @@ public final class Constants {
 
         public static final double ksVolts = 0.22;
         public static final double kvVoltSecondsPerMeter = 1.98;
-        public static final double kaVoltSecondsSquaredPerMeter = 0.2;
+        public static final double kaVoltSecondsSquaredPerMeter = 0.6;
 
         // Example value only - as above, this must be tuned for your drive!
         public static final double kPDriveVel = 8.5;
@@ -54,7 +54,7 @@ public final class Constants {
         public static final double kRamseteB = 2;
         public static final double kRamseteZeta = 0.7;
 
-        public static final double kEncoderDistancePerPulse = 63.77;
+        public static final double kEncoderDistancePerPulse = 1.25/16.00;
         public static final boolean kGyroReversed = false;
 
     }
@@ -136,8 +136,8 @@ public final class Constants {
             public static final Boolean bottomShooter = false;
             public static final Boolean hatch = false;
 
-            public static final boolean kRightEncoderReversed = false;
-            public static final boolean kLeftEncoderReversed = false;
+            public static final boolean kRightEncoderReversed = true;
+            public static final boolean kLeftEncoderReversed = true;
         }
 
         /**
@@ -145,7 +145,7 @@ public final class Constants {
          */
         public static abstract class Encoders {
             public static final int[] kRightEncoderPorts = { 8, 9 };
-            public static final int[] kLeftEncoderPorts = { 0, 1 };
+            public static final int[] kLeftEncoderPorts = { 6, 7 };
         }
     }
 
@@ -154,8 +154,10 @@ public final class Constants {
      */
 
     public static abstract class Switches {
-        public static final int hatchTopSwitch = 6;
-        public static final int hatchBottomSwitch = 7;
+        public static final int climberTopSwitch = 4;
+        public static final int hatchBottomSwitch = 5;
+
+
     }
 
     /**
@@ -166,15 +168,25 @@ public final class Constants {
          * The button IDs for specific commands. Set your button bindings here.
          */
         public static abstract class ButtonIDs {
+            // public static final int intake = 2;
+            // public static final int shoot = 1;
+            // public static final int rotate = 7;
+            // public static final int color = 8;
+            // public static final int nextColor = 11;
+            // public static final int autoAlign = 3;
+            // public static final int elevatorUp = 6;
+            // public static final int elevatorDown = 4;
+            // public static final int reverse = 9;
+
             public static final int intake = 2;
             public static final int shoot = 1;
-            public static final int rotate = 7;
-            public static final int color = 8;
-            public static final int nextColor = 11;
-            public static final int autoAlign = 3;
-            public static final int elevatorUp = 6;
-            public static final int elevatorDown = 4;
-            public static final int reverse = 9;
+            public static final int rotate = 11;
+            public static final int color = 12;
+            public static final int nextColor = 9;
+            public static final int autoAlign = 6;
+            public static final int elevatorUp = 8;
+            public static final int elevatorDown = 7;
+            public static final int reverse = 3;
         }
 
         public static final double driveThrottle = 0.5;
@@ -229,8 +241,8 @@ public final class Constants {
         public static final double conveyorOuttakePower = 0.5;
         public static final double frontConveyorIntakePower = 0.5;
         public static final double rearConveyorIntakePower = 0.5;
-        public static final double intakeIntakePower = 0.5;
-        public static final double intakeOuttakePower = 0.9;
+        public static final double intakeIntakePower = 0.4;
+        public static final double intakeOuttakePower = 0.4;
 
         public static final double hatchClosedAngle = 0;
         public static final double hatchOpenAngle = 45;
@@ -238,13 +250,13 @@ public final class Constants {
         public static final double hatchOpenSpeed = 0.2;
         public static final double hatchCloseSpeed = -0.2;
 
-        public static final double vomitSpeed = -0.5;
+        public static final double vomitSpeed = -0.3;
 
         /**
          * The amount of updates to delay to allow the fly wheels to speed up before
          * firing
          */
-        public static final int fireDelay = 100;
+        public static final int fireDelay = 120;
     }
 
     public static abstract class Evelator {

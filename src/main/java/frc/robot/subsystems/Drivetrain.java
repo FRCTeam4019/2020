@@ -67,8 +67,8 @@ public class Drivetrain extends SubsystemBase {
     m_leftEncoder.setDistancePerPulse(Constants.Stats.kEncoderDistancePerPulse);
     m_rightEncoder.setDistancePerPulse(Constants.Stats.kEncoderDistancePerPulse);
 
-    m_leftEncoder.setMinRate(5);
-    m_rightEncoder.setMinRate(5);
+    // m_leftEncoder.setMinRate(5);
+    // m_rightEncoder.setMinRate(5);
     resetEncoders();
 
     m_odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));

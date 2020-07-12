@@ -54,7 +54,7 @@ public final class Constants {
         public static final double kRamseteB = 2;
         public static final double kRamseteZeta = 0.7;
 
-        public static final double kEncoderDistancePerPulse = 1.25/16.00;
+        public static final double kEncoderDistancePerPulse = 1.25/8.00;
         public static final boolean kGyroReversed = false;
 
     }
@@ -67,6 +67,9 @@ public final class Constants {
         public static final double autoDriveSpeed = 0.5;
         public static final double autoTurnRateAddition = 0.2;
         public static final double autoTurnRate = 0.002;
+        public static final double driveForwardDistance = 0.69 * 2;
+        public static final double eStopDistance = 0;
+        public static final double encoderDiffMultiplier = 0.3;
 
         public static abstract class TrajectoryPaths {
             public static final String driveAndShoot1JSON = "paths/output/DriveAndShoot1.wpilib.json";
@@ -104,15 +107,18 @@ public final class Constants {
             public static final int rightFront = 9;
             public static final int leftFront = 1;
 
-            public static final int intake = 2;
+            public static final int intake = 4;
             // public static final int frontConveyor = 4;
             public static final int backConveyor = 8;
             public static final int topShooter = 6;
             public static final int bottomShooter = 7;
 
             // These are unset
-            public static final int spinner = 4;
+            public static final int spinner = 2;
             public static final int hatch = 3;
+
+            public static final int rightElevatorLock = 0;
+            public static final int leftElevatorLock = 1;
         }
 
         /**
@@ -137,7 +143,7 @@ public final class Constants {
             public static final Boolean hatch = false;
 
             public static final boolean kRightEncoderReversed = true;
-            public static final boolean kLeftEncoderReversed = true;
+            public static final boolean kLeftEncoderReversed = false;
         }
 
         /**
@@ -181,12 +187,13 @@ public final class Constants {
             public static final int intake = 2;
             public static final int shoot = 1;
             public static final int rotate = 11;
-            public static final int color = 12;
+            public static final int color = 9;
             public static final int nextColor = 9;
             public static final int autoAlign = 6;
             public static final int elevatorUp = 8;
             public static final int elevatorDown = 7;
             public static final int reverse = 3;
+            public static final int firePowerOverride = 10;
         }
 
         public static final double driveThrottle = 0.5;
@@ -237,11 +244,13 @@ public final class Constants {
          * The range from which to fire in CENTIMETRES
          */
         public static final double firingRange = 105;
-        public static final double shooterPower = 0.5;
+        public static final double topShooterPower = 0.5;
+        public static final double bottomShooterPower = 0.4;
+
         public static final double conveyorOuttakePower = 0.5;
         public static final double frontConveyorIntakePower = 0.5;
         public static final double rearConveyorIntakePower = 0.5;
-        public static final double intakeIntakePower = 0.4;
+        public static final double intakeIntakePower = 0.5;
         public static final double intakeOuttakePower = 0.4;
 
         public static final double hatchClosedAngle = 0;
@@ -256,12 +265,24 @@ public final class Constants {
          * The amount of updates to delay to allow the fly wheels to speed up before
          * firing
          */
-        public static final int fireDelay = 120;
+        public static final int fireDelay = 60;
+
+        public static final int fireTime = 300;
     }
 
     public static abstract class Evelator {
-        public static final double upSpeed = 0.69;
-        public static final double downSpeed = 0.69;
+        // public static final double upSpeed = 0.69;
+        // public static final double downSpeed = 0.69;
+
+        public static final double upSpeed = 0.95;
+        public static final double downSpeed = 0.95;
+
+        public static final double leftLockLockedAngle = 0;
+        public static final double rightLockLockedAngle = 0;
+
+        public static final double leftLockUnlockedAngle = 0;
+        public static final double rightLockUnlockedAngle = 0;
+
     }
 
     /**
@@ -273,6 +294,9 @@ public final class Constants {
          * How many colors away from the selected color to stop so that the field color
          * sensor is seeing the right color
          */
-        public static final int spinnerColorOffset = 3;
+        public static final int spinnerColorOffset = 2;
     }
+
+    public static final boolean updateShuffleboard = false;
+    public static final double turnMultiplier = 0.8;
 }

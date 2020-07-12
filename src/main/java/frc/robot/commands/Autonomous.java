@@ -27,6 +27,7 @@ public class Autonomous extends CommandBase {
   private final VisionTracking m_visionTracking;
   private final Ultrasonics m_ultrasonics;
   private final Shooter m_shooter;
+  private int timer = 0;
 
   private boolean isFinished = false;
 
@@ -52,7 +53,15 @@ public class Autonomous extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    autoAlign();
+    if(timer < Constants.Shooter.fireTime) {
+      m_shooter.openFire();
+      timer++;
+    } else {
+      m_shooter.ceaseFire();
+      isFinished = true;
+    }
+
+    // autoAlign();
   }
 
   private void autoAlign() {

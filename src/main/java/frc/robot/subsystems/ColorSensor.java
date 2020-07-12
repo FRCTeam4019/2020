@@ -73,7 +73,7 @@ public class ColorSensor extends SubsystemBase {
       return false;
     }
 
-    stopSpinner();
+    // stopSpinner();
     rotationControlIndex = 0;
     rotation_control = false;
 
@@ -87,6 +87,7 @@ public class ColorSensor extends SubsystemBase {
    * @return Whether or not the desired color has been reached
    */
   public Boolean goToColor(int desiredColorNum) {
+    updateColorString();
     // Checks if the color number matches what the field color sensor is seeing
     String color = intToColorString((desiredColorNum + Constants.Spinner.spinnerColorOffset) % 4);
     if (!checkColorMatch(color)) {
@@ -94,7 +95,7 @@ public class ColorSensor extends SubsystemBase {
       return false;
     }
     
-    stopSpinner();
+    // stopSpinner();
 
     return true;
   }
@@ -115,6 +116,7 @@ public class ColorSensor extends SubsystemBase {
    * @return The current color; either red, green, blue, or yellow
    */
   public String getColorString() {
+    updateColorString();
     return currentColor;
   }
 
@@ -122,11 +124,13 @@ public class ColorSensor extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     if (rotation_control) {
+      updateColorString();
       checkRotation();
     }
-    updateColorString();
+    // updateColorString();
 
-    SmartDashboard.putNumber("Num Rot", rotationControlIndex / 2);
+    if(Constants.updateShuffleboard)
+      SmartDashboard.putNumber("Num Rot", rotationControlIndex / 2);
   }
 
   /**

@@ -8,6 +8,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
@@ -83,9 +84,11 @@ public class Drivetrain extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     // SmartDashboard.putNumber("Encoder Rotations", m_rightEncoder.get());
-    SmartDashboard.putData("Left Encoder", m_leftEncoder);
-    SmartDashboard.putData("Right Encoder", m_rightEncoder);
-    SmartDashboard.putData("Gyro", (Sendable) m_gyro);
+    if(Constants.updateShuffleboard || true) {
+      SmartDashboard.putData("Left Encoder 1", m_leftEncoder);
+      SmartDashboard.putData("Right Encoder 1", m_rightEncoder);
+      SmartDashboard.putData("Gyro", (Sendable) m_gyro);
+    }
   }
 
   /**
@@ -207,5 +210,15 @@ public class Drivetrain extends SubsystemBase {
    */
   public double getTurnRate() {
     return m_gyro.getRate() * (Constants.Stats.kGyroReversed ? -1.0 : 1.0);
+  }
+
+  public void engageBrakes() {
+    tLF.setNeutralMode(NeutralMode.Brake);
+    tRF.setNeutralMode(NeutralMode.Brake);
+  }
+
+  public void disengageBreakes() {
+    tLF.setNeutralMode(NeutralMode.Coast);
+    tRF.setNeutralMode(NeutralMode.Coast);
   }
 }

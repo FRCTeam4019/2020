@@ -8,9 +8,12 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -22,6 +25,9 @@ public class Elevator extends SubsystemBase {
   private final TalonSRX leftMotor;
   private final TalonSRX rightMotor;
 
+  private Servo rightLockServo = new Servo(Constants.Motors.IDs.rightElevatorLock);
+  private Servo leftLockServo = new Servo(Constants.Motors.IDs.leftElevatorLock);
+
   private final DigitalInput climberTopSwitch = new DigitalInput(Constants.Switches.climberTopSwitch);
   /**
    * Creates a new Elevator.
@@ -32,6 +38,8 @@ public class Elevator extends SubsystemBase {
     leftMotor.setInverted(Constants.Motors.Inversions.leftElevator);
     rightMotor = new TalonSRX(Constants.Motors.IDs.rightElevator);
     rightMotor.setInverted(Constants.Motors.Inversions.rightElevator);
+
+    engageLock();
   }
 
   public void setPower(double power) {
@@ -44,7 +52,9 @@ public class Elevator extends SubsystemBase {
    */
   public void up() {
     if (climberTopSwitch.get())
-    setPower(Constants.Evelator.upSpeed);
+      setPower(Constants.Evelator.upSpeed);
+    else
+      stop();
   }
 
   /**
@@ -61,8 +71,21 @@ public class Elevator extends SubsystemBase {
     setPower(0);
   }
 
+  public void engageLock() {
+      // rightLockServo.set(Constants.Evelator.rightLockLockedAngle);
+      // leftLockServo.set(Constants.Evelator.leftLockLockedAngle);
+      leftMotor.setNeutralMode(NeutralMode.Brake);
+  }
+
+  public void disengageLock() {
+    // rightLockServo.set(Constants.Evelator.rightLockUnlockedAngle);
+    // leftLockServo.set(Constants.Evelator.leftLockUnlockedAngle);
+    // leftMotor.setNeutralMode(NeutralMode.);
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putBoolean("Climber Limit", climberTopSwitch.get());
   }
 }

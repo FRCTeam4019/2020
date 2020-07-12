@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConst
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.AutoDriveFoward;
 import frc.robot.commands.Autonomous;
 import frc.robot.commands.ColorSense;
 import frc.robot.commands.Drive;
@@ -91,7 +92,7 @@ public class RobotContainer {
 
     autonomousSelector = new SendableChooser<Integer>();
 
-    autonomousSelector.addOption("Drive Foward", 0);
+    autonomousSelector.setDefaultOption("Drive Foward", 0);
     autonomousSelector.addOption("Drive and Shoot Pos 1", 1);
     autonomousSelector.addOption("Drive and Shoot Pos 2", 2);
     autonomousSelector.addOption("Drive and Shoot Pos 3", 3);
@@ -109,7 +110,8 @@ public class RobotContainer {
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisForward),
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisRotate),
         () -> m_drivestick.getRawAxis(Constants.Controls.driveAxisThrottle),
-        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign));
+        () -> m_drivestick.getRawButton(Constants.Controls.ButtonIDs.autoAlign),
+        () -> m_operatestick.getRawButton(Constants.Controls.ButtonIDs.shoot));
 
     // m_colorSense = new ColorSense(m_colorSensor,
     //     () -> m_drivestick.getRawButtonPressed(Constants.Controls.ButtonIDs.rotate),
@@ -233,27 +235,28 @@ public class RobotContainer {
 
     // Get the pathweaver JSON file from the file system and convert it to a path
 
-    try {
-      Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
-          .resolve(Constants.Autonomous.TrajectoryPaths.driveFowardJSON);
-      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveFowardJSON,
-          ex.getStackTrace());
-    }
+    // try {
+    //   Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
+    //       .resolve(Constants.Autonomous.TrajectoryPaths.driveFowardJSON);
+    //   trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+    // } catch (IOException ex) {
+    //   DriverStation.reportError("Unable to open trajectory: " + Constants.Autonomous.TrajectoryPaths.driveFowardJSON,
+    //       ex.getStackTrace());
+    // }
 
-    RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
-        new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
-        new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
-            Constants.Stats.kaVoltSecondsSquaredPerMeter),
-        Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
-        new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
-        // RamseteCommand passes volts to the callback
-        m_drivetrain::tankDriveVolts, m_drivetrain);
+    // RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_drivetrain::getPose,
+    //     new RamseteController(Constants.Stats.kRamseteB, Constants.Stats.kRamseteZeta),
+    //     new SimpleMotorFeedforward(Constants.Stats.ksVolts, Constants.Stats.kvVoltSecondsPerMeter,
+    //         Constants.Stats.kaVoltSecondsSquaredPerMeter),
+    //     Constants.Stats.kDriveKinematics, m_drivetrain::getWheelSpeeds,
+    //     new PIDController(Constants.Stats.kPDriveVel, 0, 0), new PIDController(Constants.Stats.kPDriveVel, 0, 0),
+    //     // RamseteCommand passes volts to the callback
+    //     m_drivetrain::tankDriveVolts, m_drivetrain);
 
     // Run path following command, then stop at the end.
     // return ramseteCommand;
+    return new AutoDriveFoward(m_drivetrain, m_ultrasonics);
 
-    return ramseteCommand;
+    // return ramseteCommand;
   }
 }

@@ -29,6 +29,7 @@ public class Drive extends CommandBase {
   private final DoubleSupplier rotate;
   private final DoubleSupplier throttle;
   private final BooleanSupplier alignTrigger;
+  private final BooleanSupplier shoot;
 
   /**
    * Command class in charge of calling methods related to driving.
@@ -41,7 +42,7 @@ public class Drive extends CommandBase {
    * @param alignTrigger Button to activate auto align for shooting
    */
   public Drive(Drivetrain drivetrain, VisionTracking visionTracking, Ultrasonics ultrasonics, DoubleSupplier forward,
-      DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger) {
+      DoubleSupplier rotate, DoubleSupplier throttle, BooleanSupplier alignTrigger, BooleanSupplier shoot) {
 
     this.m_drivetrain = drivetrain;
     this.m_visionTracking = visionTracking;
@@ -51,6 +52,7 @@ public class Drive extends CommandBase {
     this.rotate = rotate;
     this.throttle = throttle;
     this.alignTrigger = alignTrigger;
+    this.shoot = shoot;
 
     // Use addRequirements() here to declare subsystem dependencies.
 
@@ -68,7 +70,7 @@ public class Drive extends CommandBase {
 
     // Gets values from lambdas
     double dForward = forward.getAsDouble();
-    double dRotate = rotate.getAsDouble();
+    double dRotate = rotate.getAsDouble() * Constants.turnMultiplier;
     double dThrottle = throttle.getAsDouble() / -2 + 0.5;
 
     // Sends values to drive method.
@@ -79,6 +81,10 @@ public class Drive extends CommandBase {
     } else {
       autoAlign();
     }
+
+    if(shoot.getAsBoolean())
+      m_drivetrain.engageBrakes();
+    else m_drivetrain.disengageBreakes();
 
   }
 

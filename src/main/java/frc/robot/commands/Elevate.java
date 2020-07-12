@@ -19,6 +19,8 @@ public class Elevate extends CommandBase {
   private final Elevator m_elevator;
   private final BooleanSupplier m_upButton;
   private final BooleanSupplier m_downButton;
+  // private final BooleanSupplier m_engageLockButton;
+  private boolean lockElevator = true;
   /**
    * Creates a new Elevate.
    */
@@ -47,6 +49,13 @@ public class Elevate extends CommandBase {
       m_elevator.down();
     else
       m_elevator.stop();
+
+    // if(m_engageLockButton.getAsBoolean())
+    //   lockElevator = !lockElevator;
+    
+    // if(lockElevator) 
+    //   m_elevator.engageLock();
+    // else m_elevator.disengageLock();
   }
 
   // Called once the command ends or is interrupted.

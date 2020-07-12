@@ -159,8 +159,11 @@ public class Shooter extends SubsystemBase {
     // Start up the fly wheels
     // setShooterPower(Constants.Shooter.shooterPower);
     // SmartDashboard.add();
-    topShooter.set(ControlMode.PercentOutput, topShooterSlider.getDouble(0));
-    bottomShooter.set(ControlMode.PercentOutput, bottomShooterSlider.getDouble(0));
+    // topShooter.set(ControlMode.PercentOutput, topShooterSlider.getDouble(0));
+    // bottomShooter.set(ControlMode.PercentOutput, bottomShooterSlider.getDouble(0));
+
+    topShooter.set(ControlMode.PercentOutput, Constants.Shooter.topShooterPower);
+    bottomShooter.set(ControlMode.PercentOutput, Constants.Shooter.bottomShooterPower);
     // test();
 
     // Give the fly wheels a chance to pick up speed before firing

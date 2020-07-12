@@ -44,19 +44,15 @@ public class VisionTracking extends SubsystemBase {
       }
       output.putFrame(pipeline.hsvThresholdOutput());
     });
+    // visionThread.set
 
-    visionThread.start();
+    // visionThread.start();
   }
 
   /**
    * @return The amount of pixels from the center that the target is
    */
   public double getTurn() {
-    return turn;
-  }
-
-  @Override
-  public void periodic() {
     double centerX;
 
     synchronized (imgLock) {
@@ -64,5 +60,11 @@ public class VisionTracking extends SubsystemBase {
     }
 
     turn = centerX - (Constants.Vision.camSize[0] / 2);
+    return turn;
+  }
+
+  @Override
+  public void periodic() {
+
   }
 }

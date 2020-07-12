@@ -44,9 +44,10 @@ public class Ultrasonics extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
-    SmartDashboard.putString("Ultrasonic 1", formatPot(pot1.get()));
-    SmartDashboard.putString("Ultrasonic 2", formatPot(pot2.get()));
+    if (Constants.updateShuffleboard) {
+      SmartDashboard.putString("Ultrasonic 1", formatPot(pot1.get()));
+      SmartDashboard.putString("Ultrasonic 2", formatPot(pot2.get()));
+    }
   }
 
   //Format the distance output to be a readable string

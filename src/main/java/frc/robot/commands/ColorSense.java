@@ -50,10 +50,12 @@ public class ColorSense extends CommandBase {
 
     colorSelector = new SendableChooser<Integer>();
 
-    colorSelector.addOption("Red", 0);
-    colorSelector.addOption("Green", 1);
+    colorSelector.setDefaultOption("Red", 0);
+    colorSelector.addOption("Yeetlow", 1);
     colorSelector.addOption("Blue", 2);
-    colorSelector.addOption("Yeetlow", 3);
+    colorSelector.addOption("Green", 3);
+    
+    
 
     SmartDashboard.putData("Selected Color 1", colorSelector);
   }
@@ -85,9 +87,9 @@ public class ColorSense extends CommandBase {
     }
 
     if (rotationTime) {
-      rotationTime = m_colorSensor.rotate(desiredRotations);
+      rotationTime = !m_colorSensor.rotate(desiredRotations);
     } else if (colorTime) {
-      colorTime = m_colorSensor.goToColor(desiredColorNum); 
+      colorTime = !m_colorSensor.goToColor(desiredColorNum);
     } else {
       // Turns everything off
       m_colorSensor.stopAll();
@@ -106,6 +108,7 @@ public class ColorSense extends CommandBase {
     // }
 
     desiredColorNum = colorSelector.getSelected();
+    // desiredColorNum = colorSelector.getSelected() != null ? colorSelector.getSelected() : 0;
     desiredColor = m_colorSensor.intToColorString(desiredColorNum);
 
     // SmartDashboard.putString("Selected Color", desiredColor);
